@@ -181,7 +181,7 @@ export default function Messages({ account, onOpenChat, onNavigate, savedCount, 
           </>
         )}
       </main>
-      <TabBar active="messages" onNavigate={onNavigate} savedCount={savedCount} />
+      <TabBar active="messages" onNavigate={onNavigate} savedCount={savedCount} newQuotes={account.unread} />
     </div>
   )
 }
