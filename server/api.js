@@ -3,6 +3,8 @@
 // and by the Vite dev server (vite.config.js) while developing.
 
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import express from 'express'
 import { CATEGORIES } from '../src/data/categories.js'
 import { chatRoutes } from './chat.js'
@@ -146,6 +148,24 @@ function businessInput(body, current) {
   }
 }
 
+/* ---------- Photos and videos ---------- */
+
+// Content-Type → kind, file extension, and how the file must start, so a
+// renamed file can't pass as a picture.
+const MEDIA_TYPES = {
+  'image/jpeg': { kind: 'photo', ext: 'jpg', starts: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  'image/png': { kind: 'photo', ext: 'png', starts: (b) => b.readUInt32BE(0) === 0x89504e47 },
+  'image/webp': { kind: 'photo', ext: 'webp', starts: (b) => b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP' },
+  'video/mp4': { kind: 'video', ext: 'mp4', starts: (b) => b.toString('latin1', 4, 8) === 'ftyp' },
+  'video/quicktime': { kind: 'video', ext: 'mov', starts: (b) => /^(ftyp|moov|mdat|wide|free)$/.test(b.toString('latin1', 4, 8)) },
+  'video/webm': { kind: 'video', ext: 'webm', starts: (b) => b.readUInt32BE(0) === 0x1a45dfa3 },
+}
+const MAX_PHOTO_BYTES = 4 * 1024 * 1024 // the app shrinks photos to well under this
+const MAX_VIDEO_MB = 60
+const MAX_MEDIA = 20
+const MAX_VIDEOS = 5
+const MEDIA_FILE = /^[\w-]+\.(jpg|png|webp|mp4|mov|webm)$/
+
 /* ---------- Rate limits (per IP, in memory) ---------- */
 
 function limiter({ max, windowMs, message }) {
@@ -166,6 +186,8 @@ function limiter({ max, windowMs, message }) {
 export function createApi({ dataDir }) {
   const db = openDb(dataDir)
   const vapidPublicKey = setupPush(dataDir)
+  const mediaDir = join(dataDir, 'media')
+  mkdirSync(mediaDir, { recursive: true })
 
   const q = {
     userByEmail: db.prepare('SELECT * FROM users WHERE email = ?'),
@@ -185,6 +207,11 @@ export function createApi({ dataDir }) {
     countOwn: db.prepare('SELECT COUNT(*) AS n FROM businesses WHERE owner_id = ?'),
     deleteBusiness: db.prepare('DELETE FROM businesses WHERE id = ?'),
     addView: db.prepare('UPDATE businesses SET views = views + 1 WHERE id = ?'),
+    mediaOf: db.prepare('SELECT * FROM media WHERE business_id = ? ORDER BY created_at'),
+    mediaOfOwner: db.prepare('SELECT media.file FROM media JOIN businesses ON businesses.id = media.business_id WHERE owner_id = ?'),
+    mediaItem: db.prepare('SELECT * FROM media WHERE id = ? AND business_id = ?'),
+    addMedia: db.prepare('INSERT INTO media (id, business_id, kind, file, bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)'),
+    deleteMedia: db.prepare('DELETE FROM media WHERE id = ?'),
     quoteCounts: db.prepare(
       'SELECT COUNT(*) AS total, SUM(read_at IS NULL) AS unread FROM quotes WHERE business_id = ?',
     ),
@@ -233,6 +260,20 @@ export function createApi({ dataDir }) {
     }
   }
 
+  // The database forgets media rows by itself (ON DELETE CASCADE); the files
+  // have to be removed by hand.
+  function removeFiles(rows) {
+    for (const { file } of rows) {
+      try {
+        unlinkSync(join(mediaDir, file))
+      } catch {
+        // already gone
+      }
+    }
+  }
+
+  const mediaJson = (m) => ({ id: m.id, kind: m.kind, path: `/media/${m.file}` })
+
   function publicBusiness(b, at) {
     return {
       id: b.id,
@@ -251,6 +292,7 @@ export function createApi({ dataDir }) {
       hours: parseJson(b.hours, []),
       logo: b.logo,
       googlePlaceId: b.google_place_id,
+      media: q.mediaOf.all(b.id).map(mediaJson),
       createdAt: b.created_at,
       distanceKm: distanceTo(b, at),
     }
@@ -358,7 +400,9 @@ export function createApi({ dataDir }) {
   api.post('/me/delete', signedIn, authLimit, (req, res) => {
     const { password_hash } = q.passwordOf.get(req.user.id)
     if (!checkPassword(String(req.body.password ?? ''), password_hash)) fail(401, 'That password isn’t right.')
+    const files = q.mediaOfOwner.all(req.user.id)
     q.deleteUser.run(req.user.id)
+    removeFiles(files)
     res.json({ ok: true })
   })
 
@@ -430,8 +474,60 @@ export function createApi({ dataDir }) {
   })
 
   api.delete('/businesses/:id', signedIn, (req, res) => {
-    q.deleteBusiness.run(ownBusiness(req).id)
+    const b = ownBusiness(req)
+    const files = q.mediaOf.all(b.id)
+    q.deleteBusiness.run(b.id)
+    removeFiles(files)
     res.json({ ok: true })
+  })
+
+  /* Photos and videos */
+
+  const mediaLimit = limiter({ max: 60, windowMs: 60 * 60e3, message: 'That’s a lot of uploads. Try again in an hour.' })
+
+  // The file is the request body, its type in Content-Type.
+  api.post(
+    '/businesses/:id/media',
+    signedIn,
+    mediaLimit,
+    express.raw({ type: ['image/*', 'video/*'], limit: `${MAX_VIDEO_MB}mb` }),
+    (req, res) => {
+      const b = ownBusiness(req)
+      const type = MEDIA_TYPES[req.get('content-type')?.split(';')[0].trim().toLowerCase()]
+      const body = req.body
+      if (!type) fail(415, 'Choose a photo (JPEG, PNG or WebP) or a video (MP4, MOV or WebM).')
+      if (!Buffer.isBuffer(body) || body.length < 16 || !type.starts(body)) fail(400, 'That file couldn’t be read. Try another one.')
+      if (type.kind === 'photo' && body.length > MAX_PHOTO_BYTES) fail(413, 'That photo is too big.')
+
+      const existing = q.mediaOf.all(b.id)
+      if (existing.length >= MAX_MEDIA) fail(400, `You can add up to ${MAX_MEDIA} photos and videos. Delete one to add another.`)
+      if (type.kind === 'video' && existing.filter((m) => m.kind === 'video').length >= MAX_VIDEOS) {
+        fail(400, `You can add up to ${MAX_VIDEOS} videos. Delete one to add another.`)
+      }
+
+      const id = newId()
+      const file = `${b.id}-${id}.${type.ext}`
+      writeFileSync(join(mediaDir, file), body)
+      q.addMedia.run(id, b.id, type.kind, file, body.length, now())
+      res.status(201).json({ media: mediaJson(q.mediaItem.get(id, b.id)) })
+    },
+  )
+
+  api.delete('/businesses/:id/media/:mediaId', signedIn, (req, res) => {
+    const b = ownBusiness(req)
+    const m = q.mediaItem.get(req.params.mediaId, b.id)
+    if (!m) fail(404, 'That photo or video is already gone.')
+    q.deleteMedia.run(m.id)
+    removeFiles([m])
+    res.json({ ok: true })
+  })
+
+  // Public files. Names are random and never reused, so they can be cached for good.
+  api.get('/media/:file', (req, res, next) => {
+    if (!MEDIA_FILE.test(req.params.file)) return next()
+    res.set({ 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' })
+    // sendFile answers Range requests, which iPhones need to play videos.
+    res.sendFile(join(mediaDir, req.params.file), (err) => err && !res.headersSent && next())
   })
 
   /* Quote requests */
@@ -557,8 +653,11 @@ export function createApi({ dataDir }) {
 
   api.use((_req, _res, next) => next(new HttpError(404, 'Not found.')))
   // eslint-disable-next-line no-unused-vars
-  api.use((err, _req, res, _next) => {
-    if (err.type === 'entity.too.large') return res.status(413).json({ error: 'That’s too much to send at once. Try a smaller logo.' })
+  api.use((err, req, res, _next) => {
+    if (err.type === 'entity.too.large') {
+      const error = req.path.endsWith('/media') ? `That video is too big. Videos can be up to ${MAX_VIDEO_MB} MB.` : 'That’s too much to send at once. Try a smaller logo.'
+      return res.status(413).json({ error })
+    }
     if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'The request wasn’t valid.' })
     if (!(err instanceof HttpError)) console.error('[api]', err)
     res.status(err.status ?? 500).json({ error: err instanceof HttpError ? err.message : 'Something went wrong on our side.' })

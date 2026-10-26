@@ -1,0 +1,12 @@
+- generic [ref=f10e3]:
+  - generic [ref=f10e4]: "[plugin:vite:oxc] Transform failed with 1 error: [PARSE_ERROR] Encountered diff marker ╭─[ src/App.jsx:20:1 ] │ 20 │ <<<<<<< HEAD │ ───┬─── │ ╰───── between this marker and `=======` is the code that we're merging into │ 22 │ ======= │ ───┬─── │ ╰───── between this marker and `>>>>>>>` is the incoming code 23 │ >>>>>>> be5c80f67c231605286592ac22adf0d71c470125 │ ───┬─── │ ╰───── this marker concludes the conflict region │ │ Help: Conflict markers indicate that a merge was started but could not be completed due to merge conflicts. │ To resolve a conflict, keep only the code you want and then delete the lines containing conflict markers. │ If you're having merge conflicts after pulling new code, the top section is the code you already had and the bottom section is the remote code. │ If you're in the middle of a rebase, the top section is the code being rebased onto and the bottom section is the code coming from the current commit being rebased. │ If you have nested conflicts, resolve the outermost conflict first. ────╯"
+  - generic [ref=f10e5]: /Users/renaldo/Documents/ai-for-dealer-/puntME/src/App.jsx
+  - generic [ref=f10e6]: at transformWithOxc (file:///Users/renaldo/Documents/ai-for-dealer-/puntME/node_modules/vite/dist/node/chunks/node.js:7618:19) at TransformPluginContext.transform (file:///Users/renaldo/Documents/ai-for-dealer-/puntME/node_modules/vite/dist/node/chunks/node.js:7690:26) at EnvironmentPluginContainer.transform (file:///Users/renaldo/Documents/ai-for-dealer-/puntME/node_modules/vite/dist/node/chunks/node.js:8582:51) at async loadAndTransform (file:///Users/renaldo/Documents/ai-for-dealer-/puntME/node_modules/vite/dist/node/chunks/node.js:20155:26) at async viteTransformMiddleware (file:///Users/renaldo/Documents/ai-for-dealer-/puntME/node_modules/vite/dist/node/chunks/node.js:20375:20)
+  - generic [ref=f10e7]:
+    - text: Click outside, press Esc key, or fix the code to dismiss.You can also disable this overlay by setting
+    - code [ref=f10e8]: server.hmr.overlay
+    - text: to
+    - code [ref=f10e9]: "false"
+    - text: in
+    - code [ref=f10e10]: vite.config.js
+    - text: .

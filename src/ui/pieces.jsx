@@ -15,6 +15,29 @@ export function Avatar({ provider, size = 'md' }) {
   )
 }
 
+/** One of the signed-in person's own businesses, with its status and counts. */
+export function BusinessRow({ business: b, onOpen }) {
+  return (
+    <button type="button" className="pm-bizrow" onClick={() => onOpen(b.id)}>
+      <Avatar provider={b} />
+      <span className="pm-stack-4 pm-grow">
+        <span className="pm-name">{b.name}</span>
+        <span className="pm-meta pm-ellipsis">
+          {b.job} · {b.area.split(',')[0]}
+        </span>
+        <span className="pm-bizrow__stats">
+          <span className={`pm-pill ${b.status === 'live' ? 'pm-pill--live' : ''}`}>{b.status === 'live' ? 'Live' : 'Paused'}</span>
+          <span className="pm-meta">
+            {b.views} view{b.views === 1 ? '' : 's'} · {b.quoteCount} request{b.quoteCount === 1 ? '' : 's'}
+          </span>
+        </span>
+      </span>
+      {b.unread > 0 && <span className="pm-count">{b.unread}</span>}
+      <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
+    </button>
+  )
+}
+
 /** Google badge for Google listings, PuntMe tick for businesses on PuntMe. */
 export function SourceBadge({ provider: p, size = 15 }) {
   if (p.puntme) return <PuntMeBadge size={size} />
@@ -178,12 +201,14 @@ export function SkeletonCard() {
 // Unread messages for the tab bar badge, provided once by App.
 export const UnreadContext = createContext(0)
 
-export function TabBar({ active, onNavigate, savedCount = 0 }) {
+/** `newQuotes` puts a dot on Profile for quote requests not yet seen. */
+export function TabBar({ active, onNavigate, savedCount = 0, newQuotes = 0 }) {
   const unread = useContext(UnreadContext)
   const tabs = [
     { id: 'discover', label: 'Discover', icon: 'compass' },
     { id: 'saved', label: 'Saved', icon: 'bookmark' },
     { id: 'messages', label: 'Messages', icon: 'message' },
+    { id: 'profile', label: 'Profile', icon: 'user' },
   ]
   const badge = { saved: savedCount, messages: unread }
   return (
@@ -202,6 +227,7 @@ export function TabBar({ active, onNavigate, savedCount = 0 }) {
             {badge[t.id] > 0 && (
               <span className={`pm-badge ${t.id === 'messages' ? 'pm-badge--alert' : ''}`}>{badge[t.id] > 99 ? '99+' : badge[t.id]}</span>
             )}
+            {t.id === 'profile' && newQuotes > 0 && <span className="pm-tab__dot" aria-label={`${newQuotes} new`} />}
           </span>
           {t.label}
         </button>

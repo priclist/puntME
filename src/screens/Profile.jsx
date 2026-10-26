@@ -5,7 +5,7 @@ import { useInstall } from '../lib/pwa.js'
 import { DataSettings, ListingSettings, LocationSettings } from '../ui/AppSettings.jsx'
 import { Icon } from '../ui/icons.jsx'
 import NotificationSettings from '../ui/NotificationSettings.jsx'
-import { Avatar } from '../ui/pieces.jsx'
+import { BusinessRow } from '../ui/pieces.jsx'
 import { showToast } from '../ui/Toast.jsx'
 
 function AuthForm({ account, onDone }) {
@@ -95,28 +95,6 @@ function AuthForm({ account, onDone }) {
         {state.busy ? 'One moment…' : mode === 'register' ? 'Create account' : 'Sign in'}
       </button>
     </form>
-  )
-}
-
-function BusinessRow({ business: b, onOpen }) {
-  return (
-    <button type="button" className="pm-bizrow" onClick={() => onOpen(b.id)}>
-      <Avatar provider={b} />
-      <span className="pm-stack-4 pm-grow">
-        <span className="pm-name">{b.name}</span>
-        <span className="pm-meta pm-ellipsis">
-          {b.job} · {b.area.split(',')[0]}
-        </span>
-        <span className="pm-bizrow__stats">
-          <span className={`pm-pill ${b.status === 'live' ? 'pm-pill--live' : ''}`}>{b.status === 'live' ? 'Live' : 'Paused'}</span>
-          <span className="pm-meta">
-            {b.views} view{b.views === 1 ? '' : 's'} · {b.quoteCount} request{b.quoteCount === 1 ? '' : 's'}
-          </span>
-        </span>
-      </span>
-      {b.unread > 0 && <span className="pm-count">{b.unread}</span>}
-      <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
-    </button>
   )
 }
 

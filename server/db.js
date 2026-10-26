@@ -58,6 +58,17 @@ const SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS quotes_business ON quotes(business_id, created_at);
 
+  -- Photos and videos an owner adds to their page. Files live in data/media/.
+  CREATE TABLE IF NOT EXISTS media (
+    id          TEXT PRIMARY KEY,
+    business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    kind        TEXT NOT NULL,
+    file        TEXT NOT NULL,
+    bytes       INTEGER NOT NULL,
+    created_at  INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS media_business ON media(business_id, created_at);
+
   CREATE TABLE IF NOT EXISTS push_subs (
     endpoint   TEXT PRIMARY KEY,
     p256dh     TEXT NOT NULL,

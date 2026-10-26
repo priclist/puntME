@@ -46,7 +46,7 @@ export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRe
           </div>
         )}
       </main>
-      <TabBar active="saved" onNavigate={onNavigate} savedCount={refs.length} />
+      <TabBar active="saved" onNavigate={onNavigate} savedCount={refs.length} newQuotes={account.unread} />
     </div>
   )
 }

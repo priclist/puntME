@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
+import { galleryOf } from '../lib/businesses.js'
 import { usingGoogle } from '../lib/places.js'
 import {
   directionsHref,
@@ -11,6 +12,7 @@ import {
   whatsappHref,
 } from '../lib/format.js'
 import { GoogleBadge, Icon, PuntMeBadge, Star } from '../ui/icons.jsx'
+import Gallery from '../ui/Gallery.jsx'
 import { ActionLink, Avatar, GoogleMapEmbed, MapIllustration, SaveButton } from '../ui/pieces.jsx'
 import QuoteSheet from '../ui/QuoteSheet.jsx'
 import { showToast } from '../ui/Toast.jsx'
@@ -55,6 +57,7 @@ export default function Provider({
   const note = hoursNote(p.periods)
   const distance = formatDistance(p.distanceKm)
   const rounded = p.rating == null ? 0 : Math.round(p.rating)
+  const gallery = galleryOf(p)
 
   // Page views for the owner's stats (not counted when they look themselves).
   useEffect(() => {
@@ -144,6 +147,28 @@ export default function Provider({
             </ActionLink>
           )}
         </div>
+
+        {/* Photos and videos, the owner's own or Google's photos */}
+        <section className="pm-stack-12" aria-labelledby="media-heading">
+          <div className="pm-row-between pm-baseline pm-pad-x-4">
+            <h2 id="media-heading" className="pm-h3">Photos & videos</h2>
+            {gallery.length > 0 && <span className="pm-meta">{gallery.length}</span>}
+          </div>
+          {gallery.length > 0 ? (
+            <Gallery items={gallery} name={p.name} />
+          ) : (
+            <div className="pm-nomedia">
+              <Icon name="camera" size={24} className="pm-muted" />
+              <span className="pm-meta">
+                {isOwner
+                  ? 'Add photos and videos of your work from My business.'
+                  : p.demo
+                    ? 'Demo listings have no photos. Add a Google API key to see real ones.'
+                    : `${p.name} hasn’t added photos or videos yet.`}
+              </span>
+            </div>
+          )}
+        </section>
 
         {/* Map */}
         <div className="pm-card">
@@ -242,14 +267,6 @@ export default function Provider({
             <h2 className="pm-h3">Google Business profile</h2>
             <span className="pm-meta pm-small">{p.demo ? 'Demo listing' : 'Live from Google'}</span>
           </div>
-
-          {p.photos?.length > 0 && (
-            <div className="pm-photos">
-              {p.photos.slice(0, 3).map((src, i) => (
-                <img key={src} src={src} alt={`${p.name} photo ${i + 1}`} className="pm-photo" loading="lazy" />
-              ))}
-            </div>
-          )}
 
           {p.rating != null && (
             <div className="pm-bigrating">

@@ -2,7 +2,7 @@
 // listings). They're shaped like every other listing so the same cards and
 // business page show them, with `puntme: true` and a few extras.
 
-import { api } from './api.js'
+import { api, apiUrl } from './api.js'
 import { haversineKm, hoursNote } from './format.js'
 
 export const PM_PREFIX = 'pm:'
@@ -45,6 +45,7 @@ export function toListing(b, coords) {
   const periods = hoursToPeriods(b.hours)
   const note = hoursNote(periods)
   const location = { lat: b.lat, lng: b.lng }
+  const media = (b.media ?? []).map((m) => ({ id: m.id, kind: m.kind, url: apiUrl(m.path) }))
   const mapsQuery = b.googlePlaceId
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.name)}&query_place_id=${b.googlePlaceId}`
     : `https://www.google.com/maps/search/?api=1&query=${b.lat},${b.lng}`
@@ -64,7 +65,9 @@ export function toListing(b, coords) {
     email: b.email,
     website: b.website,
     mapsUrl: mapsQuery,
-    photos: [],
+    // Cards show `photos[0]`; the business page shows `media`, videos included.
+    photos: media.filter((m) => m.kind === 'photo').map((m) => m.url),
+    media,
     logo: b.logo,
     hours: b.hours.length ? hoursLines(b.hours) : [],
     periods,
@@ -108,6 +111,9 @@ export async function getPuntMe(bizId, coords, { view = false } = {}) {
   const { business } = await api(`/businesses/${encodeURIComponent(bizId)}?${params}`)
   return toListing(business, coords)
 }
+
+/** What a business page's gallery shows: the owner's photos and videos, or Google's photos. */
+export const galleryOf = (p) => (p.media?.length ? p.media : (p.photos ?? []).map((url) => ({ id: url, kind: 'photo', url })))
 
 /** Link that opens this business in PuntMe. */
 export const shareUrl = (bizId) => `${window.location.origin}/?b=${encodeURIComponent(bizId)}`

@@ -4,6 +4,7 @@ import { displayPhone, shareUrl, toListing } from '../lib/businesses.js'
 import { telHref, timeAgo, whatsappHref } from '../lib/format.js'
 import { usePush } from '../lib/push.js'
 import { Icon } from '../ui/icons.jsx'
+import MediaManager, { MediaSaveBar, useMediaDraft } from '../ui/MediaManager.jsx'
 import { Avatar } from '../ui/pieces.jsx'
 import { showToast } from '../ui/Toast.jsx'
 
@@ -29,13 +30,19 @@ function QuoteCard({ quote: q, business, isNew, onDelete }) {
   return (
     <article className={`pm-quote ${isNew ? 'is-new' : ''}`}>
       <div className="pm-quote__head">
-        {isNew && <span className="pm-dot" aria-label="New" />}
+        <Avatar provider={{ name: q.name }} size="sm" />
         <span className="pm-stack-2 pm-grow">
-          <strong className="pm-title-15 pm-ellipsis">{q.name}</strong>
+          <span className="pm-quote__name">
+            <strong className="pm-title-15 pm-ellipsis">{q.name}</strong>
+            {isNew && <span className="pm-pill pm-pill--new">New</span>}
+          </span>
           <span className="pm-meta">
             {displayPhone(q.phone)} · {timeAgo(q.createdAt)}
           </span>
         </span>
+        <button type="button" className="pm-iconbtn pm-iconbtn--sm" aria-label={`Delete request from ${q.name}`} onClick={() => onDelete(q)}>
+          <Icon name="trash" size={18} />
+        </button>
       </div>
       <p className="pm-quote__msg">{q.message}</p>
       <div className="pm-quote__actions">
@@ -44,14 +51,11 @@ function QuoteCard({ quote: q, business, isNew, onDelete }) {
           Call
         </a>
         {whatsapp && (
-          <a className="pm-btn pm-btn--soft" href={whatsapp} target="_blank" rel="noreferrer">
-            <Icon name="chat" size={16} />
+          <a className="pm-btn pm-btn--whatsapp" href={whatsapp} target="_blank" rel="noreferrer">
+            <Icon name="chat" size={16} strokeWidth={2} />
             WhatsApp
           </a>
         )}
-        <button type="button" className="pm-iconbtn pm-iconbtn--sm" aria-label={`Delete request from ${q.name}`} onClick={() => onDelete(q)}>
-          <Icon name="trash" size={18} />
-        </button>
       </div>
     </article>
   )
@@ -63,6 +67,13 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
   const [quotes, setQuotes] = useState({ status: 'loading', items: [], fresh: new Set() })
   const [busy, setBusy] = useState(false)
   const { refresh } = account
+  const draft = useMediaDraft(b, refresh)
+
+  // Unsaved photo changes would be lost by leaving this screen.
+  const leave = (go) => (...args) => {
+    if (draft.changes && !window.confirm('Leave without saving your photo and video changes?')) return
+    go(...args)
+  }
 
   // Load requests, then mark the new ones read (they stay highlighted here).
   useEffect(() => {
@@ -162,10 +173,10 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
   return (
     <div className="pm-screen">
       <div className="pm-topbar">
-        <button type="button" className="pm-iconbtn" aria-label="Back" onClick={onBack}>
+        <button type="button" className="pm-iconbtn" aria-label="Back" onClick={leave(onBack)}>
           <Icon name="back" size={22} strokeWidth={2} />
         </button>
-        <button type="button" className="pm-textlink pm-textlink--pad" onClick={() => onEdit(b)}>
+        <button type="button" className="pm-textlink pm-textlink--pad" onClick={leave(() => onEdit(b))}>
           Edit
         </button>
       </div>
@@ -212,7 +223,7 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
         </div>
 
         <div className="pm-actions4 pm-actions4--3">
-          <button type="button" className="pm-action" onClick={() => onView(toListing(b, null))}>
+          <button type="button" className="pm-action" onClick={leave(() => onView(toListing(b, null)))}>
             <Icon name="eye" size={22} />
             View page
           </button>
@@ -244,6 +255,7 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
           </button>
         )}
 
+<<<<<<< ours
         <button type="button" className="pm-areanudge pm-areanudge--plain" onClick={onOpenMessages}>
           <Icon name="message" size={20} className="pm-accent" />
           <span className="pm-stack-2 pm-grow">
@@ -257,6 +269,9 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
           {account.messagesUnread > 0 && <span className="pm-count">{account.messagesUnread}</span>}
           <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
         </button>
+=======
+        <MediaManager draft={draft} />
+>>>>>>> theirs
 
         <section className="pm-stack-12" aria-labelledby="quotes-heading">
           <h2 id="quotes-heading" className="pm-h2">Quote requests</h2>
@@ -289,6 +304,7 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
           </button>
         </div>
       </main>
+      <MediaSaveBar draft={draft} />
     </div>
   )
 }

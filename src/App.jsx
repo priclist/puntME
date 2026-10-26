@@ -31,7 +31,7 @@ function topPicks(results) {
   return results
     .filter((p) => p.rating != null)
     .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
-    .slice(0, 3)
+    .slice(0, 8)
 }
 
 // "Window cleaners" for a known job, otherwise the search text as typed.
@@ -156,6 +156,7 @@ export default function App() {
   }
 
   function navigate(name) {
+    if (name === 'profile') return openProfile()
     scrollMemo.current = {}
     setNavDir('none')
     setStack([{ name }])
@@ -266,16 +267,27 @@ export default function App() {
   // "Top rated near you" loads on open and when the area changes. After a
   // search it's refreshed from that search's results instead (see runSearch).
   const currentPlaceKey = placeKey(place)
-  useEffect(() => {
-    let cancelled = false
+  const recsId = useRef(0)
+  const loadRecs = useCallback((job) => {
+    const id = ++recsId.current
     setRecs((r) => ({ ...r, status: 'loading' }))
-    searchProviders({ query: lastJobRef.current, place: placeRef.current })
-      .then(({ results }) => !cancelled && setRecs({ status: 'done', items: topPicks(results) }))
-      .catch(() => !cancelled && setRecs({ status: 'error', items: [] }))
+    searchProviders({ query: job, place: placeRef.current })
+      .then(({ results }) => id === recsId.current && setRecs({ status: 'done', items: topPicks(results) }))
+      .catch(() => id === recsId.current && setRecs({ status: 'error', items: [] }))
+  }, [])
+  useEffect(() => {
+    loadRecs(lastJobRef.current)
     return () => {
-      cancelled = true
+      recsId.current++
     }
-  }, [currentPlaceKey])
+  }, [currentPlaceKey, loadRecs])
+
+  // Discover's job tabs swap the picks in place, without opening results.
+  function pickJob(job) {
+    if (job === lastJobRef.current) return
+    setLastJob(job)
+    loadRecs(job)
+  }
 
   // "New on PuntMe": businesses that joined and work in this area.
   const businessCount = account.businesses.length
@@ -446,7 +458,6 @@ export default function App() {
             hasPlace={Boolean(place)}
             onSetArea={openSheet}
             recent={recent}
-            onClearRecent={() => setRecent([])}
             status={search.status}
             error={search.error}
             source={search.source}
@@ -612,9 +623,9 @@ export default function App() {
           <Discover
             areaLabel={areaLabel}
             place={place}
-            onChangeArea={openSheet}
             onStartSearch={startSearch}
             onSearch={runSearch}
+            onPickJob={pickJob}
             lastJob={lastJob}
             lastJobLabel={jobLabel(lastJob)}
             recs={recs}
@@ -624,8 +635,8 @@ export default function App() {
             onNavigate={navigate}
             savedCount={saved.length}
             account={account}
-            onOpenProfile={openProfile}
             onAddBusiness={addBusiness}
+            onOpenBusiness={(bizId) => push({ name: 'business', bizId })}
             newOnPm={newOnPm}
             onShowInstall={() => setInstallOpen(true)}
           />

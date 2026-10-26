@@ -30,6 +30,37 @@ export class ApiError extends Error {
   }
 }
 
+/** Full URL of something the API serves, like a business photo. */
+export const apiUrl = (path) => `${BASE}${path}`
+
+/**
+ * Sends a file as the request body. Uses XHR rather than fetch because only
+ * XHR reports upload progress (`onProgress` gets 0–1).
+ */
+export function upload(path, blob, { onProgress } = {}) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${BASE}${path}`)
+    xhr.setRequestHeader('Content-Type', blob.type)
+    const token = getToken()
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total)
+    xhr.onerror = () =>
+      reject(new ApiError(0, navigator.onLine === false ? 'You’re offline. Check your connection and try again.' : 'The upload didn’t go through. Try again.'))
+    xhr.onload = () => {
+      let data = null
+      try {
+        data = JSON.parse(xhr.responseText)
+      } catch {
+        // not JSON (a proxy's error page)
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && data) resolve(data)
+      else reject(new ApiError(xhr.status, data?.error ?? `The upload didn’t work (error ${xhr.status}).`))
+    }
+    xhr.send(blob)
+  })
+}
+
 /** JSON request to /api. Throws ApiError with a message ready to show. */
 export async function api(path, { method = 'GET', body, signal } = {}) {
   const token = getToken()

@@ -112,6 +112,119 @@ function AlertCard({ query, jobTitle, place, onShowInstall }) {
   )
 }
 
+function JobRow({ tile, tileStyle, title, sub, onClick }) {
+  return (
+    <button type="button" className="pm-jobrow" onClick={onClick}>
+      <span className="pm-jobrow__tile" style={tileStyle} aria-hidden="true">
+        {tile}
+      </span>
+      <span className="pm-stack-2 pm-grow">
+        <span className="pm-jobrow__title pm-ellipsis">{title}</span>
+        {sub && <span className="pm-meta pm-ellipsis">{sub}</span>}
+      </span>
+    </button>
+  )
+}
+
+/* Before a search: "What job?" card, then where and when, like a booking app */
+function SearchStart({ text, onTextChange, onSubmit, onBack, autoFocus, recent, areaText, onSetArea, openNow, onToggleOpen }) {
+  const typed = text.trim().toLowerCase()
+  const suggestions = typed
+    ? CATEGORIES.filter(
+        (c) => c.label.toLowerCase().includes(typed) || c.single.toLowerCase().includes(typed) || c.keywords.some((k) => typed.includes(k)),
+      )
+    : CATEGORIES
+
+  function submit(e) {
+    e.preventDefault()
+    e.currentTarget.querySelector('input')?.blur() // dismiss the phone keyboard
+    onSubmit(text)
+  }
+
+  return (
+    <div className="pm-screen pm-screen--searchstart">
+      <div className="pm-searchstart__top">
+        <button type="button" className="pm-roundbtn" aria-label="Close" onClick={onBack}>
+          <Icon name="close" size={20} strokeWidth={2.2} />
+        </button>
+      </div>
+
+      <section className="pm-whatcard" aria-labelledby="what-heading">
+        <h1 id="what-heading" className="pm-whatcard__title">What job?</h1>
+        <form className="pm-bigsearch" role="search" onSubmit={submit}>
+          <Icon name="search" size={20} strokeWidth={2} />
+          <label className="pm-sr-only" htmlFor="job-search">Job you need done</label>
+          <input
+            id="job-search"
+            type="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            placeholder="Search jobs, like “tiler”"
+            autoFocus={autoFocus}
+            value={text}
+            onChange={(e) => onTextChange(e.target.value)}
+          />
+          {text && (
+            <button type="button" className="pm-clear" aria-label="Clear search" onClick={() => onTextChange('')}>
+              ×
+            </button>
+          )}
+        </form>
+
+        <div className="pm-whatcard__list">
+          {typed && (
+            <JobRow
+              tile={<Icon name="search" size={22} strokeWidth={2} />}
+              tileStyle={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
+              title={`Search for “${text.trim()}”`}
+              sub="Anyone who does this job"
+              onClick={() => onSubmit(text)}
+            />
+          )}
+          {!typed && recent.length > 0 && (
+            <>
+              <p className="pm-whatcard__label">Recent searches</p>
+              {recent.slice(0, 3).map((q) => (
+                <JobRow key={q} tile={<Icon name="clock" size={22} />} title={q} onClick={() => onSubmit(q)} />
+              ))}
+            </>
+          )}
+          {suggestions.length > 0 && <p className="pm-whatcard__label">{typed ? 'Jobs' : 'Popular jobs'}</p>}
+          {suggestions.map((c) => (
+            <JobRow
+              key={c.id}
+              tile={c.emoji}
+              tileStyle={{ background: `${c.color}1f` }}
+              title={c.label}
+              sub={c.hint}
+              onClick={() => onSubmit(c.query)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <button type="button" className="pm-pickcard" onClick={onSetArea}>
+        <span>Where</span>
+        <strong className="pm-ellipsis">{areaText}</strong>
+      </button>
+      <button type="button" className="pm-pickcard" onClick={onToggleOpen} aria-pressed={openNow}>
+        <span>When</span>
+        <strong>{openNow ? 'Open now' : 'Any time'}</strong>
+      </button>
+
+      <footer className="pm-searchstart__foot">
+        <button type="button" className="pm-underline" onClick={() => onTextChange('')} disabled={!text}>
+          Clear all
+        </button>
+        <button type="button" className="pm-btn pm-btn--primary pm-btn--search" onClick={() => onSubmit(text)} disabled={!typed}>
+          <Icon name="search" size={18} strokeWidth={2.4} />
+          Search
+        </button>
+      </footer>
+    </div>
+  )
+}
+
 export default function Results({
   text,
   onTextChange,
@@ -124,7 +237,6 @@ export default function Results({
   hasPlace,
   onSetArea,
   recent,
-  onClearRecent,
   status,
   error,
   source,
@@ -143,18 +255,28 @@ export default function Results({
   place,
   onShowInstall,
 }) {
+  if (!lastQuery) {
+    return (
+      <SearchStart
+        text={text}
+        onTextChange={onTextChange}
+        onSubmit={onSubmit}
+        onBack={onBack}
+        autoFocus={autoFocus}
+        recent={recent}
+        areaText={hasPlace ? (where[1] === 'you' ? 'Near you' : where[1]) : 'Add your area'}
+        onSetArea={onSetArea}
+        openNow={Boolean(filters.open)}
+        onToggleOpen={() => onToggleFilter('open')}
+      />
+    )
+  }
+
   function submit(e) {
     e.preventDefault()
     e.currentTarget.querySelector('input')?.blur() // dismiss the phone keyboard
     onSubmit(text)
   }
-
-  const typed = text.trim().toLowerCase()
-  const suggestions = typed
-    ? CATEGORIES.filter(
-        (c) => c.label.toLowerCase().includes(typed) || c.single.toLowerCase().includes(typed) || c.keywords.some((k) => typed.includes(k)),
-      )
-    : []
 
   return (
     <div className="pm-screen">
@@ -183,84 +305,23 @@ export default function Results({
             )}
           </form>
         </div>
-        {lastQuery && (
-          <div className="pm-hscroll pm-hscroll--inset" role="toolbar" aria-label="Filters">
-            {FILTERS.filter((f) => !f.needsDistance || hasDistance).map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className={`pm-chip ${filters[f.id] ? 'is-on' : ''}`}
-                aria-pressed={!!filters[f.id]}
-                onClick={() => onToggleFilter(f.id)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="pm-hscroll pm-hscroll--inset" role="toolbar" aria-label="Filters">
+          {FILTERS.filter((f) => !f.needsDistance || hasDistance).map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={`pm-chip ${filters[f.id] ? 'is-on' : ''}`}
+              aria-pressed={!!filters[f.id]}
+              onClick={() => onToggleFilter(f.id)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <main className="pm-scroll pm-scroll--results">
-        {!lastQuery && typed && (
-          <section className="pm-stack-12" aria-label="Suggestions">
-            <div className="pm-card">
-              <button type="button" className="pm-joblink" onClick={() => onSubmit(text)}>
-                <span className="pm-joblink__label">
-                  <Icon name="search" size={18} className="pm-muted" />
-                  <span className="pm-ellipsis">
-                    Search for <strong>“{text.trim()}”</strong>
-                  </span>
-                </span>
-                <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
-              </button>
-              {suggestions.map((c) => (
-                <button key={c.id} type="button" className="pm-joblink" onClick={() => onSubmit(c.query)}>
-                  <span>{c.label}</span>
-                  <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!lastQuery && !typed && recent.length > 0 && (
-          <section className="pm-stack-12" aria-labelledby="recent-heading">
-            <div className="pm-row-between pm-pad-x-4">
-              <h2 id="recent-heading" className="pm-h2">Recent</h2>
-              <button type="button" className="pm-textlink" onClick={onClearRecent}>
-                Clear
-              </button>
-            </div>
-            <div className="pm-card">
-              {recent.map((q) => (
-                <button key={q} type="button" className="pm-joblink" onClick={() => onSubmit(q)}>
-                  <span className="pm-joblink__label">
-                    <Icon name="clock" size={18} className="pm-muted" />
-                    <span className="pm-ellipsis">{q}</span>
-                  </span>
-                  <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!lastQuery && !typed && (
-          <section className="pm-stack-12" aria-labelledby="alljobs-heading">
-            <h2 id="alljobs-heading" className="pm-h2 pm-pad-x-4">All jobs</h2>
-            <div className="pm-card">
-              {CATEGORIES.map((c) => (
-                <button key={c.id} type="button" className="pm-joblink" onClick={() => onSubmit(c.query)}>
-                  <span>{c.label}</span>
-                  <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
-                </button>
-              ))}
-            </div>
-            <p className="pm-footnote">Or type any job above, like “dog groomer” or “tiler”.</p>
-          </section>
-        )}
-
-        {lastQuery && status === 'loading' && (
+        {status === 'loading' && (
           <div className="pm-stack-10" aria-busy="true" aria-label="Loading results">
             {[0, 1, 2].map((i) => (
               <SkeletonCard key={i} />
@@ -268,7 +329,7 @@ export default function Results({
           </div>
         )}
 
-        {lastQuery && status === 'error' && (
+        {status === 'error' && (
           <div className="pm-empty">
             <p className="pm-title-15">Search didn’t work</p>
             <p className="pm-meta">{error}</p>
@@ -278,7 +339,7 @@ export default function Results({
           </div>
         )}
 
-        {lastQuery && status === 'done' && (
+        {status === 'done' && (
           <>
             {!hasPlace && (
               <button type="button" className="pm-areanudge" onClick={onSetArea}>
