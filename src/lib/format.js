@@ -38,15 +38,12 @@ export function telHref(phone) {
 
 export function directionsHref(p) {
   if (p.demo) return p.mapsUrl
-<<<<<<< Updated upstream
   if (p.puntme) {
     // PuntMe businesses come to you, so this is the area they work from.
     const params = new URLSearchParams({ api: '1', destination: `${p.location.lat},${p.location.lng}` })
     if (p.googlePlaceId) params.set('destination_place_id', p.googlePlaceId)
     return `https://www.google.com/maps/dir/?${params}`
   }
-=======
->>>>>>> Stashed changes
   const params = new URLSearchParams({ api: '1', destination: `${p.name}, ${p.address ?? ''}` })
   if (p.id) params.set('destination_place_id', p.id)
   return `https://www.google.com/maps/dir/?${params}`
@@ -64,19 +61,12 @@ export function mapsHref(p) {
 
 // Google doesn't say which numbers use WhatsApp. South African mobile
 // numbers (+27 6x/7x/8x, but not 086x/087x) usually do, so only those get a
-<<<<<<< Updated upstream
 // WhatsApp button. PuntMe businesses say so themselves (`whatsapp`).
 export function whatsappHref(p, text) {
   if (p.whatsapp === false) return null
   const digits = (p.intlPhone ?? '').replace(/\D/g, '')
   const likelyMobile = /^27[678]\d{8}$/.test(digits) && !/^278[67]/.test(digits)
   if (p.puntme ? digits.length < 9 : !likelyMobile) return null
-=======
-// WhatsApp button.
-export function whatsappHref(p, text) {
-  const digits = (p.intlPhone ?? '').replace(/\D/g, '')
-  if (!/^27[678]\d{8}$/.test(digits) || /^278[67]/.test(digits)) return null
->>>>>>> Stashed changes
   return `https://wa.me/${digits}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 }
 
@@ -117,7 +107,6 @@ export function hoursNote(periods, now = new Date()) {
   const today = next.open.day === now.getDay() && next.wait < 1440
   return `opens ${today ? '' : `${DAY_SHORT[next.open.day]} `}${hhmm(next.open)}`
 }
-<<<<<<< Updated upstream
 
 /** "just now", "5 min ago", "3 h ago", "yesterday", "12 Oct". */
 export function timeAgo(ms, now = Date.now()) {
@@ -129,5 +118,3 @@ export function timeAgo(ms, now = Date.now()) {
   if (h < 48) return 'yesterday'
   return new Date(ms).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
 }
-=======
->>>>>>> Stashed changes

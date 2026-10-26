@@ -55,7 +55,6 @@ export async function reverseGeocode({ lat, lng }) {
     return null
   }
 }
-<<<<<<< Updated upstream
 
 /**
  * The phone's position as a place ({ label, lat, lng, source: 'gps' }).
@@ -85,5 +84,3 @@ export function locateMe() {
     )
   })
 }
-=======
->>>>>>> Stashed changes

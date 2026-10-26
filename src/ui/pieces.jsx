@@ -1,19 +1,12 @@
-<<<<<<< Updated upstream
 import { GoogleBadge, Icon, PuntMeBadge, Star } from './icons.jsx'
-=======
-import { GoogleBadge, Icon, Star } from './icons.jsx'
->>>>>>> Stashed changes
 import { showToast } from './Toast.jsx'
 import { API_KEY } from '../lib/places.js'
 import { formatDistance, hoursNote, initials, tintFor } from '../lib/format.js'
 
 export function Avatar({ provider, size = 'md' }) {
-<<<<<<< Updated upstream
   if (provider.logo) {
     return <img className={`pm-avatar pm-avatar--${size} pm-avatar--logo`} src={provider.logo} alt="" />
   }
-=======
->>>>>>> Stashed changes
   return (
     <span className={`pm-avatar pm-avatar--${size} pm-tint--${tintFor(provider.name)}`} aria-hidden="true">
       {initials(provider.name)}
@@ -21,7 +14,6 @@ export function Avatar({ provider, size = 'md' }) {
   )
 }
 
-<<<<<<< Updated upstream
 /** Google badge for Google listings, PuntMe tick for businesses on PuntMe. */
 export function SourceBadge({ provider: p, size = 15 }) {
   if (p.puntme) return <PuntMeBadge size={size} />
@@ -75,8 +67,6 @@ export function SwitchRow({ icon, title, note, checked, onChange, disabled }) {
   )
 }
 
-=======
->>>>>>> Stashed changes
 const DEMO_MESSAGE = 'This is a demo listing. Add your Google API key to contact real businesses.'
 
 // Link that renders disabled when there's nowhere to go (no phone, etc).
@@ -134,11 +124,7 @@ export function OpenStatus({ provider: p }) {
 }
 
 export function Rating({ provider: p, long = false }) {
-<<<<<<< Updated upstream
   if (p.rating == null) return <span className="pm-meta">{p.puntme ? 'New on PuntMe' : 'No reviews yet'}</span>
-=======
-  if (p.rating == null) return <span className="pm-meta">No reviews yet</span>
->>>>>>> Stashed changes
   return (
     <span className="pm-rating">
       <Star size={13} />
@@ -152,12 +138,8 @@ export function Rating({ provider: p, long = false }) {
 
 /* Compact card used on Discover and Saved */
 export function ProviderListCard({ provider: p, saved, onOpen, onToggleSave }) {
-<<<<<<< Updated upstream
   const where = p.distanceKm != null ? `${formatDistance(p.distanceKm)} away` : p.puntme ? p.address?.split(',')[0] : null
   const meta = [p.category, where].filter(Boolean).join(', ')
-=======
-  const meta = [p.category, p.distanceKm != null ? `${formatDistance(p.distanceKm)} away` : null].filter(Boolean).join(', ')
->>>>>>> Stashed changes
   return (
     <div className="pm-listcard">
       <button type="button" className="pm-listcard__main" onClick={() => onOpen(p)}>
@@ -165,11 +147,7 @@ export function ProviderListCard({ provider: p, saved, onOpen, onToggleSave }) {
         <span className="pm-listcard__text">
           <span className="pm-name-row">
             <span className="pm-name">{p.name}</span>
-<<<<<<< Updated upstream
             <SourceBadge provider={p} />
-=======
-            {!p.demo && <GoogleBadge />}
->>>>>>> Stashed changes
           </span>
           {meta && <span className="pm-meta">{meta}</span>}
           <span className="pm-rating-row">

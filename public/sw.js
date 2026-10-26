@@ -1,5 +1,4 @@
 // PuntMe service worker: opens instantly and works offline once it has
-<<<<<<< Updated upstream
 // been visited, and shows push notifications (quote requests, job alerts).
 // Business data (Google and the PuntMe API) is never cached here; it
 // always comes live from the network.
@@ -12,16 +11,6 @@ const DEV = new URL(self.location.href).searchParams.has('dev')
 
 self.addEventListener('install', (event) => {
   if (!DEV) event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)))
-=======
-// been visited. Business data (Google) is never cached here; it always
-// comes live from the network.
-
-const CACHE = 'puntme-v1'
-const SHELL = ['/', '/manifest.webmanifest', '/icon.svg', '/icon-192.png']
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)))
->>>>>>> Stashed changes
   self.skipWaiting()
 })
 
@@ -29,11 +18,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-<<<<<<< Updated upstream
       .then((keys) => Promise.all(keys.filter((k) => DEV || k !== CACHE).map((k) => caches.delete(k))))
-=======
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
->>>>>>> Stashed changes
       .then(() => self.clients.claim()),
   )
 })
@@ -41,17 +26,11 @@ self.addEventListener('activate', (event) => {
 const isFont = (url) => url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'
 
 self.addEventListener('fetch', (event) => {
-<<<<<<< Updated upstream
   if (DEV) return
   const { request } = event
   if (request.method !== 'GET') return
   const url = new URL(request.url)
   if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) return
-=======
-  const { request } = event
-  if (request.method !== 'GET') return
-  const url = new URL(request.url)
->>>>>>> Stashed changes
 
   // Pages: network first so updates show up, cached copy when offline.
   if (request.mode === 'navigate') {
@@ -83,7 +62,6 @@ self.addEventListener('fetch', (event) => {
     )
   }
 })
-<<<<<<< Updated upstream
 
 /* ---------- Push notifications ---------- */
 
@@ -131,5 +109,3 @@ self.addEventListener('notificationclick', (event) => {
     })(),
   )
 })
-=======
->>>>>>> Stashed changes

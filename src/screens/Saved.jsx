@@ -1,31 +1,19 @@
 import { useSavedProviders } from '../lib/saved.js'
 import { Icon } from '../ui/icons.jsx'
-<<<<<<< Updated upstream
 import { ProfileButton, ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
 
 export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRemove, onNavigate, account, onOpenProfile }) {
-=======
-import { ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
-
-export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRemove, onNavigate }) {
->>>>>>> Stashed changes
   const items = useSavedProviders(refs, coords)
 
   return (
     <div className="pm-screen">
       <main className="pm-scroll pm-scroll--discover">
-<<<<<<< Updated upstream
         <header className="pm-pagehead">
           <div className="pm-stack-4">
             <h1 className="pm-hero pm-hero--page">Saved</h1>
             <p className="pm-meta pm-m0">People you want to come back to</p>
           </div>
           <ProfileButton account={account} onOpen={onOpenProfile} />
-=======
-        <header className="pm-stack-4">
-          <h1 className="pm-hero pm-hero--page">Saved</h1>
-          <p className="pm-meta pm-m0">People you want to come back to</p>
->>>>>>> Stashed changes
         </header>
 
         {items.length === 0 ? (
@@ -43,13 +31,9 @@ export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRe
               if (failed) {
                 return (
                   <div key={id} className="pm-listcard pm-failed">
-<<<<<<< Updated upstream
                     <span className="pm-meta pm-grow">
                       {id.startsWith('pm:') ? 'This business isn’t on PuntMe right now.' : 'This business couldn’t be loaded from Google right now.'}
                     </span>
-=======
-                    <span className="pm-meta pm-grow">This business couldn’t be loaded from Google right now.</span>
->>>>>>> Stashed changes
                     <button type="button" className="pm-btn pm-btn--soft" onClick={() => onRemove(id)}>
                       Remove
                     </button>

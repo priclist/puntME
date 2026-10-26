@@ -1040,7 +1040,6 @@ body {
     transform: none;
   }
 }
-<<<<<<< Updated upstream
 
 /* =====================================================================
    Accounts, businesses, notifications, install
@@ -1598,5 +1597,3 @@ body {
   .pm-switch__thumb { transition-duration: 0ms; }
   :is(.pm-profilebtn, .pm-promo, .pm-addbiz, .pm-toast__btn):active:not(:disabled) { transform: none; }
 }
-=======
->>>>>>> Stashed changes

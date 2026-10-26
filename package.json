@@ -1,18 +1,12 @@
 {
   "name": "puntme",
   "private": true,
-<<<<<<< Updated upstream
   "version": "1.1.0",
   "description": "PuntMe — find someone for any job, and put your own business in front of the people nearby.",
-=======
-  "version": "1.0.0",
-  "description": "PuntMe — search any job and find the local people and Google businesses who do it.",
->>>>>>> Stashed changes
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-<<<<<<< Updated upstream
     "start": "NODE_NO_WARNINGS=1 node server/index.js",
     "preview": "npm run build && npm start"
   },
@@ -21,22 +15,12 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "web-push": "^3.6.7"
-=======
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
->>>>>>> Stashed changes
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.2",
     "vite": "^8.3.5"
-<<<<<<< Updated upstream
   },
   "engines": {
     "node": ">=22.13"
-=======
->>>>>>> Stashed changes
   }
 }

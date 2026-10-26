@@ -71,7 +71,6 @@ const PATHS = {
     </>
   ),
   wrench: <path d="M15 4a4 4 0 0 0-3.9 5L4 16.1V20h3.9L15 12.9A4 4 0 0 0 20 9l-2.5 2.5-3-3L17 6a4 4 0 0 0-2-2z" />,
-<<<<<<< Updated upstream
   user: (
     <>
       <circle cx="12" cy="8.5" r="3.8" />
@@ -136,8 +135,6 @@ const PATHS = {
       <path d="M12 8.5v7M8.5 12h7" />
     </>
   ),
-=======
->>>>>>> Stashed changes
 }
 
 export function Icon({ name, size = 20, filled = false, strokeWidth = 1.8, className = '' }) {
@@ -176,7 +173,6 @@ export function Star({ size = 14, empty = false }) {
   )
 }
 
-<<<<<<< Updated upstream
 // Marks a business its owner added to PuntMe.
 export function PuntMeBadge({ size = 15 }) {
   return (
@@ -187,8 +183,6 @@ export function PuntMeBadge({ size = 15 }) {
   )
 }
 
-=======
->>>>>>> Stashed changes
 // Marks a real Google Business Profile listing (not demo data).
 export function GoogleBadge({ size = 15 }) {
   return (

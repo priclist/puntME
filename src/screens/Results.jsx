@@ -1,14 +1,9 @@
 import { CATEGORIES } from '../data/categories.js'
 import { directionsHref, formatDistance, hoursNote, telHref, whatsappHref } from '../lib/format.js'
-<<<<<<< Updated upstream
 import { usePush, withAlert } from '../lib/push.js'
 import { Icon } from '../ui/icons.jsx'
 import { ActionLink, Avatar, Rating, SaveButton, SkeletonCard, SourceBadge } from '../ui/pieces.jsx'
 import { showToast } from '../ui/Toast.jsx'
-=======
-import { GoogleBadge, Icon } from '../ui/icons.jsx'
-import { ActionLink, Avatar, Rating, SaveButton, SkeletonCard } from '../ui/pieces.jsx'
->>>>>>> Stashed changes
 
 const FILTERS = [
   { id: 'open', label: 'Open now' },
@@ -27,11 +22,7 @@ function ResultCard({ provider: p, saved, onOpen, onToggleSave }) {
         <div className="pm-resultcard__title">
           <button type="button" className="pm-name-row pm-linkreset" onClick={() => onOpen(p)}>
             <span className="pm-name pm-name--lg">{p.name}</span>
-<<<<<<< Updated upstream
             <SourceBadge provider={p} size={16} />
-=======
-            {!p.demo && <GoogleBadge size={16} />}
->>>>>>> Stashed changes
           </button>
           <span className="pm-meta">
             <Rating provider={p} long />
@@ -79,7 +70,6 @@ function ResultCard({ provider: p, saved, onOpen, onToggleSave }) {
   )
 }
 
-<<<<<<< Updated upstream
 // "Notify me when a new plumber joins near Sandton" under the results.
 function AlertCard({ query, jobTitle, place, onShowInstall }) {
   const push = usePush()
@@ -122,8 +112,6 @@ function AlertCard({ query, jobTitle, place, onShowInstall }) {
   )
 }
 
-=======
->>>>>>> Stashed changes
 export default function Results({
   text,
   onTextChange,
@@ -152,11 +140,8 @@ export default function Results({
   onOpenProvider,
   onToggleSave,
   onRetry,
-<<<<<<< Updated upstream
   place,
   onShowInstall,
-=======
->>>>>>> Stashed changes
 }) {
   function submit(e) {
     e.preventDefault()
@@ -350,11 +335,8 @@ export default function Results({
               <ResultCard key={p.id} provider={p} saved={savedIds.has(p.id)} onOpen={onOpenProvider} onToggleSave={onToggleSave} />
             ))}
 
-<<<<<<< Updated upstream
             <AlertCard query={lastQuery} jobTitle={jobTitle} place={place} onShowInstall={onShowInstall} />
 
-=======
->>>>>>> Stashed changes
             <p className={`pm-footnote ${source === 'demo' ? 'pm-demo-note' : ''}`}>
               {source === 'google'
                 ? 'Ratings and reviews from Google'
