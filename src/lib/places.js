@@ -1,4 +1,5 @@
 import { demoSearch } from '../data/demo.js'
+import { bizIdOf, getPuntMe, isPuntMeId, searchPuntMe } from './businesses.js'
 import { haversineKm } from './format.js'
 
 // Google Business listings come from the Places API (New), loaded through the
@@ -147,12 +148,31 @@ async function toProvider(place, coords) {
 }
 
 /**
- * Search for people/businesses who do a job.
+ * Search for people/businesses who do a job: businesses on PuntMe first,
+ * then Google listings (or demo ones without a key).
  * @param {{ query: string, place?: {label:string, lat?:number, lng?:number, source:'gps'|'search'} | null }} opts
  * @returns {Promise<{ source: 'google' | 'demo', results: object[] }>}
  */
 export async function searchProviders({ query, place }) {
   const coords = place?.lat != null ? { lat: place.lat, lng: place.lng } : null
+  const [listings, own] = await Promise.all([searchListings({ query, place, coords }), searchPuntMe(query, coords)])
+  own.forEach((p) => sessionCache.set(p.id, p))
+  return { source: listings.source, results: withOwnBusinesses(own, listings.results) }
+}
+
+// An owner who linked their Google listing shows once, as their PuntMe
+// business, with the Google rating and reviews (for this session only).
+function withOwnBusinesses(own, listings) {
+  const byId = new Map(listings.map((p) => [p.id, p]))
+  const linked = new Set(own.map((p) => p.googlePlaceId).filter(Boolean))
+  const merged = own.map((p) => {
+    const g = p.googlePlaceId && byId.get(p.googlePlaceId)
+    return g ? { ...p, rating: g.rating, reviewCount: g.reviewCount, reviews: g.reviews, photos: g.photos, mapsUrl: g.mapsUrl ?? p.mapsUrl } : p
+  })
+  return [...merged, ...listings.filter((p) => !linked.has(p.id))]
+}
+
+async function searchListings({ query, place, coords }) {
   const areaName = place && place.source !== 'gps' ? place.label : ''
 
   if (!usingGoogle) {
@@ -198,6 +218,11 @@ export function peekProvider(id) {
 export async function getProvider(id, coords) {
   const cached = sessionCache.get(id)
   if (cached) return cached
+  if (isPuntMeId(id)) {
+    const listing = await getPuntMe(bizIdOf(id), coords)
+    sessionCache.set(id, listing)
+    return listing
+  }
   if (!usingGoogle) throw new Error('A Google API key is needed to load this business.')
 
   await loadMaps()
@@ -209,4 +234,40 @@ export async function getProvider(id, coords) {
   const provider = await toProvider(place, coords)
   sessionCache.set(id, provider)
   return provider
+}
+
+const pad = (n) => String(n).padStart(2, '0')
+const clock = (pt) => `${pad(pt.hour)}:${pad(pt.minute)}`
+
+/**
+ * Google listings matching a business name, so an owner can fill in the
+ * "Add your business" form from their Google Business Profile in one tap.
+ */
+export async function findGoogleBusiness(text, coords) {
+  await loadMaps()
+  if (authFailed) throw new Error('Google rejected the API key.')
+  const { Place } = await window.google.maps.importLibrary('places')
+  const request = {
+    textQuery: text,
+    fields: ['id', 'displayName', 'primaryTypeDisplayName', 'formattedAddress', 'location', 'internationalPhoneNumber', 'websiteURI', 'regularOpeningHours'],
+    maxResultCount: 5,
+    region: 'za',
+  }
+  if (coords) request.locationBias = { center: coords, radius: 30000 }
+  const { places } = await Place.searchByText(request)
+  return places.map((p) => ({
+    googlePlaceId: p.id,
+    name: p.displayName,
+    job: p.primaryTypeDisplayName ?? '',
+    address: p.formattedAddress ?? '',
+    lat: p.location?.lat() ?? null,
+    lng: p.location?.lng() ?? null,
+    phone: p.internationalPhoneNumber ?? '',
+    website: p.websiteURI ?? '',
+    hours: (p.regularOpeningHours?.periods ?? []).map(({ open, close }) => ({
+      day: open.day,
+      open: clock(open),
+      close: close ? clock(close) : '23:59',
+    })),
+  }))
 }

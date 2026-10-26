@@ -1,13 +1,69 @@
-import { GoogleBadge, Icon, Star } from './icons.jsx'
+import { GoogleBadge, Icon, PuntMeBadge, Star } from './icons.jsx'
 import { showToast } from './Toast.jsx'
 import { API_KEY } from '../lib/places.js'
 import { formatDistance, hoursNote, initials, tintFor } from '../lib/format.js'
 
 export function Avatar({ provider, size = 'md' }) {
+  if (provider.logo) {
+    return <img className={`pm-avatar pm-avatar--${size} pm-avatar--logo`} src={provider.logo} alt="" />
+  }
   return (
     <span className={`pm-avatar pm-avatar--${size} pm-tint--${tintFor(provider.name)}`} aria-hidden="true">
       {initials(provider.name)}
     </span>
+  )
+}
+
+/** Google badge for Google listings, PuntMe tick for businesses on PuntMe. */
+export function SourceBadge({ provider: p, size = 15 }) {
+  if (p.puntme) return <PuntMeBadge size={size} />
+  return p.demo ? null : <GoogleBadge size={size} />
+}
+
+/* Profile button, top right of the main tabs */
+export function ProfileButton({ account, onOpen }) {
+  const user = account.user
+  const unread = account.unread
+  const label = user
+    ? `Your profile${unread ? `, ${unread} new quote request${unread === 1 ? '' : 's'}` : ''}`
+    : 'Profile: sign in or add your business'
+  return (
+    <button type="button" className={`pm-profilebtn ${user ? 'is-signed-in' : ''}`} aria-label={label} onClick={onOpen}>
+      {user ? <span className="pm-profilebtn__initials">{initials(user.name) || '?'}</span> : <Icon name="user" size={22} />}
+      {unread > 0 && <span className="pm-profilebtn__badge">{unread > 9 ? '9+' : unread}</span>}
+    </button>
+  )
+}
+
+/** iOS-style on/off switch. */
+export function Switch({ checked, onChange, label, disabled = false, id }) {
+  return (
+    <button
+      id={id}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      className="pm-switch"
+      onClick={() => onChange(!checked)}
+    >
+      <span className="pm-switch__thumb" />
+    </button>
+  )
+}
+
+/** A settings row with a label, an optional note and a switch. */
+export function SwitchRow({ icon, title, note, checked, onChange, disabled }) {
+  return (
+    <div className="pm-detail pm-detail--button pm-switchrow">
+      {icon && <Icon name={icon} size={20} className="pm-muted" />}
+      <span className="pm-stack-2 pm-grow">
+        <span className="pm-detail__main">{title}</span>
+        {note && <span className="pm-meta">{note}</span>}
+      </span>
+      <Switch checked={checked} onChange={onChange} label={title} disabled={disabled} />
+    </div>
   )
 }
 
@@ -68,7 +124,7 @@ export function OpenStatus({ provider: p }) {
 }
 
 export function Rating({ provider: p, long = false }) {
-  if (p.rating == null) return <span className="pm-meta">No reviews yet</span>
+  if (p.rating == null) return <span className="pm-meta">{p.puntme ? 'New on PuntMe' : 'No reviews yet'}</span>
   return (
     <span className="pm-rating">
       <Star size={13} />
@@ -82,7 +138,8 @@ export function Rating({ provider: p, long = false }) {
 
 /* Compact card used on Discover and Saved */
 export function ProviderListCard({ provider: p, saved, onOpen, onToggleSave }) {
-  const meta = [p.category, p.distanceKm != null ? `${formatDistance(p.distanceKm)} away` : null].filter(Boolean).join(', ')
+  const where = p.distanceKm != null ? `${formatDistance(p.distanceKm)} away` : p.puntme ? p.address?.split(',')[0] : null
+  const meta = [p.category, where].filter(Boolean).join(', ')
   return (
     <div className="pm-listcard">
       <button type="button" className="pm-listcard__main" onClick={() => onOpen(p)}>
@@ -90,7 +147,7 @@ export function ProviderListCard({ provider: p, saved, onOpen, onToggleSave }) {
         <span className="pm-listcard__text">
           <span className="pm-name-row">
             <span className="pm-name">{p.name}</span>
-            {!p.demo && <GoogleBadge />}
+            <SourceBadge provider={p} />
           </span>
           {meta && <span className="pm-meta">{meta}</span>}
           <span className="pm-rating-row">

@@ -55,3 +55,32 @@ export async function reverseGeocode({ lat, lng }) {
     return null
   }
 }
+
+/**
+ * The phone's position as a place ({ label, lat, lng, source: 'gps' }).
+ * Rejects with a message ready to show.
+ */
+export function locateMe() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Location is not available on this device.'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const at = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        const label = await reverseGeocode(at)
+        resolve({ label: label ?? 'Your location', ...at, source: 'gps' })
+      },
+      (err) =>
+        reject(
+          new Error(
+            err.code === err.PERMISSION_DENIED
+              ? 'Location is turned off for PuntMe. Allow it in your browser settings, or type your area instead.'
+              : 'PuntMe couldn’t get your location. Try again, or type your area instead.',
+          ),
+        ),
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 10 * 60 * 1000 },
+    )
+  })
+}

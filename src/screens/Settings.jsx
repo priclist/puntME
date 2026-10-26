@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { connectApiKey, disconnectApiKey, keyFromSettings } from '../lib/places.js'
+import { useInstall } from '../lib/pwa.js'
 import { Icon } from '../ui/icons.jsx'
-import { TabBar } from '../ui/pieces.jsx'
+import { ProfileButton, TabBar } from '../ui/pieces.jsx'
+import { showToast } from '../ui/Toast.jsx'
 
 function ConnectGoogle() {
   const [key, setKey] = useState('')
@@ -58,7 +60,19 @@ export default function Settings({
   onClearSaved,
   onClearRecent,
   onNavigate,
+  account,
+  onOpenProfile,
+  onAddBusiness,
+  onShowInstall,
 }) {
+  const install = useInstall()
+  const business = account.businesses[0]
+
+  async function installApp() {
+    if (!install.canPrompt) return onShowInstall()
+    if (await install.install()) showToast('PuntMe is on your home screen')
+  }
+
   const locationNote = locateError
     ? locateError
     : place
@@ -68,8 +82,9 @@ export default function Settings({
   return (
     <div className="pm-screen">
       <main className="pm-scroll pm-scroll--discover">
-        <header>
+        <header className="pm-pagehead">
           <h1 className="pm-hero pm-hero--page">Settings</h1>
+          <ProfileButton account={account} onOpen={onOpenProfile} />
         </header>
 
         <section className="pm-stack-12" aria-labelledby="loc-heading">
@@ -125,14 +140,53 @@ export default function Settings({
         <section className="pm-stack-12" aria-labelledby="biz-heading">
           <h2 id="biz-heading" className="pm-h2">For businesses</h2>
           <div className="pm-card">
+            <button type="button" className="pm-detail pm-detail--button" onClick={business ? onOpenProfile : onAddBusiness}>
+              <Icon name="store" size={20} className="pm-accent" />
+              <span className="pm-stack-2 pm-grow">
+                <span className="pm-detail__main">{business ? 'Your business on PuntMe' : 'Add your business to PuntMe'}</span>
+                <span className="pm-meta">
+                  {business
+                    ? `${business.name} · ${account.unread ? `${account.unread} new request${account.unread === 1 ? '' : 's'}` : 'quote requests, stats and details'}`
+                    : 'Free. Get quote requests from people nearby on your phone'}
+                </span>
+              </span>
+              <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
+            </button>
             <a className="pm-detail pm-detail--button" href="https://business.google.com/create" target="_blank" rel="noreferrer">
               <Icon name="globe" size={20} className="pm-muted" />
               <span className="pm-stack-2 pm-grow">
-                <span className="pm-detail__main">Get your business on PuntMe</span>
-                <span className="pm-meta">Free Google Business Profile, shows up here once it’s live</span>
+                <span className="pm-detail__main">Create a Google Business Profile</span>
+                <span className="pm-meta">Also free. Shows you in Google search and Maps too</span>
               </span>
               <Icon name="external" size={16} strokeWidth={2} className="pm-muted" />
             </a>
+          </div>
+        </section>
+
+        <section className="pm-stack-12" aria-labelledby="app-heading">
+          <h2 id="app-heading" className="pm-h2">App</h2>
+          <div className="pm-card">
+            <button type="button" className="pm-detail pm-detail--button" onClick={onOpenProfile}>
+              <Icon name="bell" size={20} className="pm-muted" />
+              <span className="pm-stack-2 pm-grow">
+                <span className="pm-detail__main">Notifications</span>
+                <span className="pm-meta">Quote requests and job alerts</span>
+              </span>
+              <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
+            </button>
+            {install.available ? (
+              <button type="button" className="pm-detail pm-detail--button" onClick={installApp}>
+                <Icon name="download" size={20} className="pm-accent" />
+                <span className="pm-detail__main pm-accent pm-grow">Install PuntMe on this phone</span>
+              </button>
+            ) : (
+              install.installed && (
+                <div className="pm-detail">
+                  <Icon name="check" size={20} strokeWidth={2.2} className="pm-green" />
+                  <span className="pm-detail__main pm-grow">Installed on this phone</span>
+                </div>
+              )
+            )}
           </div>
         </section>
 
@@ -146,10 +200,12 @@ export default function Settings({
               <span className="pm-detail__main pm-danger">Clear recent searches</span>
             </button>
           </div>
-          <p className="pm-meta pm-m0 pm-pad-x-4">Saved people, searches and your area stay on this phone only.</p>
+          <p className="pm-meta pm-m0 pm-pad-x-4">
+            Saved people, searches and your area stay on this phone only. Your account and business details are kept by PuntMe.
+          </p>
         </section>
 
-        <p className="pm-footnote">PuntMe 1.0 · Find someone for any job</p>
+        <p className="pm-footnote">PuntMe 1.1 · Find someone for any job</p>
       </main>
       <TabBar active="settings" onNavigate={onNavigate} savedCount={savedCount} />
     </div>

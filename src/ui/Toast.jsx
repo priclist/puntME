@@ -2,20 +2,23 @@ import { useEffect, useState } from 'react'
 
 const EVENT = 'puntme:toast'
 
-/** Show a short message at the bottom of the screen. */
-export function showToast(message) {
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: message }))
+/**
+ * Show a short message at the bottom of the screen. An `action`
+ * ({ label, onClick }) adds a button and keeps the message up longer.
+ */
+export function showToast(message, { action } = {}) {
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: { message, action } }))
 }
 
 export default function Toast() {
-  const [message, setMessage] = useState(null)
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     let timer
     const onToast = (e) => {
-      setMessage(e.detail)
+      setToast({ ...e.detail, key: Date.now() })
       clearTimeout(timer)
-      timer = setTimeout(() => setMessage(null), 2800)
+      timer = setTimeout(() => setToast(null), e.detail.action ? 6000 : 2800)
     }
     window.addEventListener(EVENT, onToast)
     return () => {
@@ -26,7 +29,23 @@ export default function Toast() {
 
   return (
     <div className="pm-toast-region" role="status" aria-live="polite">
-      {message && <div className="pm-toast">{message}</div>}
+      {toast && (
+        <div key={toast.key} className={`pm-toast ${toast.action ? 'pm-toast--action' : ''}`}>
+          <span>{toast.message}</span>
+          {toast.action && (
+            <button
+              type="button"
+              className="pm-toast__btn"
+              onClick={() => {
+                setToast(null)
+                toast.action.onClick()
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

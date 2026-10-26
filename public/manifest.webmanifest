@@ -2,18 +2,118 @@
   "id": "/",
   "name": "PuntMe",
   "short_name": "PuntMe",
-  "description": "Search any job and find the local people and Google businesses who do it.",
+  "description": "Find someone for any job near you, or add your business and get quote requests on your phone.",
+  "lang": "en-ZA",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#f7f7f5",
   "theme_color": "#f7f7f5",
-  "categories": ["business", "lifestyle", "utilities"],
+  "categories": [
+    "business",
+    "lifestyle",
+    "utilities"
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Find someone",
+      "short_name": "Search",
+      "url": "/?go=search",
+      "icons": [
+        {
+          "src": "/shortcut-search.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Saved people",
+      "short_name": "Saved",
+      "url": "/?go=saved",
+      "icons": [
+        {
+          "src": "/shortcut-saved.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "My business",
+      "short_name": "Business",
+      "url": "/?profile=1",
+      "icons": [
+        {
+          "src": "/shortcut-add.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/discover.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Search any job near you"
+    },
+    {
+      "src": "/screenshots/results.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Local people who do the job, best first"
+    },
+    {
+      "src": "/screenshots/business.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Call, WhatsApp or ask for a quote"
+    },
+    {
+      "src": "/screenshots/my-business.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Your business: quote requests and stats"
+    }
   ]
 }

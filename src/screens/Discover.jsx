@@ -1,7 +1,37 @@
 import { BROWSE, QUICK_SEARCHES } from '../data/categories.js'
 import { usingGoogle } from '../lib/places.js'
+import { useInstall } from '../lib/pwa.js'
+import { useLocalStorage } from '../lib/useLocalStorage.js'
 import { Icon } from '../ui/icons.jsx'
-import { GoogleMapEmbed, MapIllustration, ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
+import { GoogleMapEmbed, MapIllustration, ProfileButton, ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
+import { showToast } from '../ui/Toast.jsx'
+
+function InstallBanner({ onShowInstall }) {
+  const install = useInstall()
+  const [dismissed, setDismissed] = useLocalStorage('puntme:installDismissed', false)
+  if (!install.available || dismissed) return null
+
+  async function go() {
+    if (!install.canPrompt) return onShowInstall()
+    if (await install.install()) showToast('PuntMe is on your home screen')
+  }
+
+  return (
+    <div className="pm-installbar">
+      <img src="/icon-192.png" alt="" className="pm-installbar__icon" />
+      <span className="pm-stack-2 pm-grow">
+        <span className="pm-title-15">Get the PuntMe app</span>
+        <span className="pm-meta">Free, quick to open, works with no signal</span>
+      </span>
+      <button type="button" className="pm-btn pm-btn--primary" onClick={go}>
+        Install
+      </button>
+      <button type="button" className="pm-iconbtn pm-iconbtn--sm" aria-label="Not now" onClick={() => setDismissed(true)}>
+        <Icon name="close" size={16} strokeWidth={2} />
+      </button>
+    </div>
+  )
+}
 
 export default function Discover({
   areaLabel,
@@ -17,7 +47,13 @@ export default function Discover({
   onToggleSave,
   onNavigate,
   savedCount,
+  account,
+  onOpenProfile,
+  onAddBusiness,
+  newOnPm,
+  onShowInstall,
 }) {
+  const ownsBusiness = account.businesses.length > 0
   // A typed area goes into the map search; a GPS position centres the map.
   const areaName = place && place.source !== 'gps' ? place.label : ''
   const center = place?.lat != null && !areaName ? { lat: place.lat, lng: place.lng } : null
@@ -36,7 +72,7 @@ export default function Discover({
               <span className="pm-area__label">{areaLabel}</span>
               <Icon name="chevronDown" size={16} strokeWidth={2} className="pm-muted" />
             </button>
-            <span className="pm-wordmark">PuntMe</span>
+            <ProfileButton account={account} onOpen={onOpenProfile} />
           </div>
 
           <h1 className="pm-hero">
@@ -136,6 +172,41 @@ export default function Discover({
             </div>
           </section>
         )}
+
+        {newOnPm.length > 0 && (
+          <section className="pm-stack-12" aria-labelledby="new-heading">
+            <h2 id="new-heading" className="pm-h2">New on PuntMe</h2>
+            <div className="pm-stack-10">
+              {newOnPm.slice(0, 4).map((p) => (
+                <ProviderListCard
+                  key={p.id}
+                  provider={p}
+                  saved={savedIds.has(p.id)}
+                  onOpen={onOpenProvider}
+                  onToggleSave={onToggleSave}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!ownsBusiness && (
+          <button type="button" className="pm-promo" onClick={onAddBusiness}>
+            <span className="pm-stack-4 pm-grow">
+              <span className="pm-promo__title">Do this kind of work?</span>
+              <span className="pm-promo__text">Add your business free and get quote requests from people near you.</span>
+              <span className="pm-promo__cta">
+                Add your business
+                <Icon name="arrowRight" size={16} strokeWidth={2.2} />
+              </span>
+            </span>
+            <span className="pm-promo__icon" aria-hidden="true">
+              <Icon name="store" size={30} />
+            </span>
+          </button>
+        )}
+
+        <InstallBanner onShowInstall={onShowInstall} />
       </main>
       <TabBar active="discover" onNavigate={onNavigate} savedCount={savedCount} />
     </div>

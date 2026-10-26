@@ -1,16 +1,19 @@
 import { useSavedProviders } from '../lib/saved.js'
 import { Icon } from '../ui/icons.jsx'
-import { ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
+import { ProfileButton, ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
 
-export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRemove, onNavigate }) {
+export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRemove, onNavigate, account, onOpenProfile }) {
   const items = useSavedProviders(refs, coords)
 
   return (
     <div className="pm-screen">
       <main className="pm-scroll pm-scroll--discover">
-        <header className="pm-stack-4">
-          <h1 className="pm-hero pm-hero--page">Saved</h1>
-          <p className="pm-meta pm-m0">People you want to come back to</p>
+        <header className="pm-pagehead">
+          <div className="pm-stack-4">
+            <h1 className="pm-hero pm-hero--page">Saved</h1>
+            <p className="pm-meta pm-m0">People you want to come back to</p>
+          </div>
+          <ProfileButton account={account} onOpen={onOpenProfile} />
         </header>
 
         {items.length === 0 ? (
@@ -28,7 +31,9 @@ export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRe
               if (failed) {
                 return (
                   <div key={id} className="pm-listcard pm-failed">
-                    <span className="pm-meta pm-grow">This business couldn’t be loaded from Google right now.</span>
+                    <span className="pm-meta pm-grow">
+                      {id.startsWith('pm:') ? 'This business isn’t on PuntMe right now.' : 'This business couldn’t be loaded from Google right now.'}
+                    </span>
                     <button type="button" className="pm-btn pm-btn--soft" onClick={() => onRemove(id)}>
                       Remove
                     </button>

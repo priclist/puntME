@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+import { api } from '../lib/api.js'
 import { usingGoogle } from '../lib/places.js'
 import {
   directionsHref,
@@ -8,15 +10,16 @@ import {
   telHref,
   whatsappHref,
 } from '../lib/format.js'
-import { GoogleBadge, Icon, Star } from '../ui/icons.jsx'
+import { GoogleBadge, Icon, PuntMeBadge, Star } from '../ui/icons.jsx'
 import { ActionLink, Avatar, GoogleMapEmbed, MapIllustration, SaveButton } from '../ui/pieces.jsx'
+import QuoteSheet from '../ui/QuoteSheet.jsx'
 import { showToast } from '../ui/Toast.jsx'
 
 const todayIndex = () => (new Date().getDay() + 6) % 7 // Google lists Monday first
 
 // The phone's share sheet where there is one, otherwise copy the link.
 async function share(p) {
-  const url = mapsHref(p)
+  const url = p.puntme ? `${window.location.origin}/?b=${p.bizId}` : mapsHref(p)
   const text = `${p.name}${p.phone ? ` · ${p.phone}` : ''} (found on PuntMe)`
   if (navigator.share) {
     await navigator.share({ title: p.name, text, url }).catch(() => {})
@@ -30,7 +33,12 @@ async function share(p) {
   }
 }
 
-export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
+// What the map shows: the Google place, or the area a PuntMe business works from.
+const mapQuery = (p) =>
+  p.puntme ? (p.googlePlaceId ? `place_id:${p.googlePlaceId}` : `${p.location.lat},${p.location.lng}`) : `place_id:${p.id}`
+
+export default function Provider({ provider: p, onBack, saved, onToggleSave, isOwner = false }) {
+  const [quoteOpen, setQuoteOpen] = useState(false)
   const tel = telHref(p.phone)
   const quoteText = `Hi ${p.name}, I found you on PuntMe. Could I please get a quote${p.category ? ` for ${p.category.toLowerCase()} work` : ''}?`
   const whatsapp = whatsappHref(p)
@@ -38,6 +46,11 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
   const note = hoursNote(p.periods)
   const distance = formatDistance(p.distanceKm)
   const rounded = p.rating == null ? 0 : Math.round(p.rating)
+
+  // Page views for the owner's stats (not counted when they look themselves).
+  useEffect(() => {
+    if (p.puntme && !isOwner) api(`/businesses/${encodeURIComponent(p.bizId)}?view=1`).catch(() => {})
+  }, [p.puntme, p.bizId, isOwner])
 
   return (
     <div className="pm-screen">
@@ -58,7 +71,12 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
             <p className="pm-provider-sub">
               {p.category ?? 'Local business'}
               <span aria-hidden="true">·</span>
-              {p.demo ? (
+              {p.puntme ? (
+                <span className="pm-verified-label pm-onpuntme-label">
+                  <PuntMeBadge size={15} />
+                  On PuntMe
+                </span>
+              ) : p.demo ? (
                 <span className="pm-demo-label">Demo listing</span>
               ) : (
                 <span className="pm-verified-label">
@@ -82,7 +100,7 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
               <Icon name="chevronRight" size={14} strokeWidth={2} className="pm-muted" />
             </a>
           ) : (
-            <span className="pm-meta">No reviews yet</span>
+            <span className="pm-meta">{p.puntme ? 'New on PuntMe, no reviews yet' : 'No reviews yet'}</span>
           )}
         </div>
 
@@ -109,7 +127,7 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
         <div className="pm-card">
           <div className="pm-map-wrap">
             {usingGoogle && !p.demo ? (
-              <GoogleMapEmbed q={`place_id:${p.id}`} height={168} label={`Map showing ${p.name}`} />
+              <GoogleMapEmbed q={mapQuery(p)} height={168} label={`Map showing ${p.name}`} />
             ) : (
               <MapIllustration height={168} pins="single" label={`Map showing ${p.name}${p.address ? ` at ${p.address}` : ''}`} />
             )}
@@ -123,7 +141,11 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
           <div className="pm-card-row">
             <div className="pm-stack-2 pm-grow">
               <span className="pm-title-15">{p.address ?? 'Address not listed'}</span>
-              {distance && <span className="pm-meta">{distance} from you</span>}
+              {p.puntme ? (
+                <span className="pm-meta">Comes to you, up to {p.radiusKm} km away</span>
+              ) : (
+                distance && <span className="pm-meta">{distance} from you</span>
+              )}
             </div>
             <a className="pm-btn pm-btn--tint" href={mapsHref(p)} target="_blank" rel="noreferrer">
               Open in Maps
@@ -174,10 +196,25 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
                 </span>
               </a>
             )}
+            {p.email && (
+              <a className="pm-detail" href={`mailto:${p.email}`}>
+                <Icon name="mail" size={20} className="pm-muted" />
+                <span className="pm-detail__main pm-accent pm-ellipsis">{p.email}</span>
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* About, written by the owner */}
+        {p.puntme && p.description && (
+          <div className="pm-card pm-card--pad">
+            <h2 className="pm-h3">About {p.name}</h2>
+            <p className="pm-about">{p.description}</p>
           </div>
         )}
 
         {/* Google Business profile */}
+        {(!p.puntme || p.rating != null) && (
         <div className="pm-card pm-card--pad">
           <div className="pm-row-between pm-baseline">
             <h2 className="pm-h3">Google Business profile</h2>
@@ -228,15 +265,24 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave }) {
             <Icon name="external" size={16} strokeWidth={2} />
           </a>
         </div>
+        )}
       </main>
 
       <div className="pm-bottombar">
         <SaveButton saved={saved} onToggle={() => onToggleSave(p)} name={p.name} variant="outline" />
-        <ActionLink className="pm-btn pm-btn--primary pm-btn--big" href={quoteHref} external={Boolean(whatsapp)} demo={p.demo}>
-          <Icon name={whatsapp || p.demo ? 'chat' : 'phone'} size={18} strokeWidth={2} />
-          Ask for a quote
-        </ActionLink>
+        {p.puntme ? (
+          <button type="button" className="pm-btn pm-btn--primary pm-btn--big" onClick={() => setQuoteOpen(true)}>
+            <Icon name="send" size={18} strokeWidth={2} />
+            Ask for a quote
+          </button>
+        ) : (
+          <ActionLink className="pm-btn pm-btn--primary pm-btn--big" href={quoteHref} external={Boolean(whatsapp)} demo={p.demo}>
+            <Icon name={whatsapp || p.demo ? 'chat' : 'phone'} size={18} strokeWidth={2} />
+            Ask for a quote
+          </ActionLink>
+        )}
       </div>
+      {p.puntme && <QuoteSheet open={quoteOpen} provider={p} onClose={() => setQuoteOpen(false)} />}
     </div>
   )
 }
