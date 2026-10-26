@@ -1,0 +1,5 @@
+- generic [ref=f5e2]:
+  - generic [ref=f5e4]:
+    - button "Back" [ref=f5e6] [cursor=pointer]
+    - main [ref=f5e9]
+  - status

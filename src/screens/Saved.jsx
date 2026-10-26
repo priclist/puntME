@@ -46,7 +46,11 @@ export default function Saved({ refs, coords, onOpenProvider, onToggleSave, onRe
           </div>
         )}
       </main>
+<<<<<<< Updated upstream
       <TabBar active="saved" onNavigate={onNavigate} savedCount={refs.length} newQuotes={account.unread} />
+=======
+      <TabBar active="saved" onNavigate={onNavigate} savedCount={refs.length} unread={account.unread} />
+>>>>>>> Stashed changes
     </div>
   )
 }

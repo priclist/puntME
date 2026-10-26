@@ -198,6 +198,7 @@ export function SkeletonCard() {
   )
 }
 
+<<<<<<< Updated upstream
 // Unread messages for the tab bar badge, provided once by App.
 export const UnreadContext = createContext(0)
 
@@ -208,6 +209,13 @@ export function TabBar({ active, onNavigate, savedCount = 0, newQuotes = 0 }) {
     { id: 'discover', label: 'Discover', icon: 'compass' },
     { id: 'saved', label: 'Saved', icon: 'bookmark' },
     { id: 'messages', label: 'Messages', icon: 'message' },
+=======
+export function TabBar({ active, onNavigate, savedCount = 0, unread = 0 }) {
+  const tabs = [
+    { id: 'discover', label: 'Discover', icon: 'compass' },
+    { id: 'saved', label: 'Saved', icon: 'bookmark' },
+    { id: 'settings', label: 'Settings', icon: 'sliders' },
+>>>>>>> Stashed changes
     { id: 'profile', label: 'Profile', icon: 'user' },
   ]
   const badge = { saved: savedCount, messages: unread }
@@ -224,10 +232,15 @@ export function TabBar({ active, onNavigate, savedCount = 0, newQuotes = 0 }) {
         >
           <span className="pm-tab__icon">
             <Icon name={t.icon} size={24} strokeWidth={active === t.id ? 2 : 1.8} filled={t.id === 'saved' && active === t.id} />
+<<<<<<< Updated upstream
             {badge[t.id] > 0 && (
               <span className={`pm-badge ${t.id === 'messages' ? 'pm-badge--alert' : ''}`}>{badge[t.id] > 99 ? '99+' : badge[t.id]}</span>
             )}
             {t.id === 'profile' && newQuotes > 0 && <span className="pm-tab__dot" aria-label={`${newQuotes} new`} />}
+=======
+            {t.id === 'saved' && savedCount > 0 && <span className="pm-badge">{savedCount}</span>}
+            {t.id === 'profile' && unread > 0 && <span className="pm-tab__dot" aria-label={`${unread} new`} />}
+>>>>>>> Stashed changes
           </span>
           {t.label}
         </button>

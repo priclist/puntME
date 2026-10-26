@@ -255,6 +255,7 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
           </button>
         )}
 
+<<<<<<< Updated upstream
 <<<<<<< ours
         <button type="button" className="pm-areanudge pm-areanudge--plain" onClick={onOpenMessages}>
           <Icon name="message" size={20} className="pm-accent" />
@@ -272,6 +273,9 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
 =======
         <MediaManager draft={draft} />
 >>>>>>> theirs
+=======
+        <MediaManager draft={draft} />
+>>>>>>> Stashed changes
 
         <section className="pm-stack-12" aria-labelledby="quotes-heading">
           <h2 id="quotes-heading" className="pm-h2">Quote requests</h2>

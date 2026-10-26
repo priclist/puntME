@@ -1878,6 +1878,7 @@ body {
 }
 
 /* =====================================================================
+<<<<<<< Updated upstream
 <<<<<<< ours
    Messages (inbox tab + chat), after ClassroomX's iOS Messages design
    ===================================================================== */
@@ -2011,6 +2012,8 @@ body {
 }
 .pm-roundbtn {
 =======
+=======
+>>>>>>> Stashed changes
    Photos and videos: the gallery on a business page, the owner's grid
    ===================================================================== */
 
@@ -2083,13 +2086,17 @@ body {
   position: absolute;
   top: 0;
   right: 0;
+<<<<<<< Updated upstream
 >>>>>>> theirs
+=======
+>>>>>>> Stashed changes
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
   padding: 0;
   border: none;
+<<<<<<< Updated upstream
 <<<<<<< ours
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
@@ -2380,6 +2387,8 @@ body {
   .pm-chat__send,
   .pm-chat__composer { transition: none; }
 =======
+=======
+>>>>>>> Stashed changes
   background: none;
   color: #fff !important;
 }
@@ -2452,5 +2461,8 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .pm-savebar { animation: none; }
+<<<<<<< Updated upstream
 >>>>>>> theirs
+=======
+>>>>>>> Stashed changes
 }

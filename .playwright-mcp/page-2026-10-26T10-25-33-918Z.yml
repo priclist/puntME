@@ -1,0 +1,58 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e4]:
+    - banner [ref=f4e5]:
+      - button "What do you need done? Any area" [ref=f4e7] [cursor=pointer]:
+        - generic [ref=f4e11]: What do you need done?
+      - navigation "Jobs" [ref=f4e12]:
+        - button "Windows" [ref=f4e13] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e14]: 🪟
+          - text: Windows
+        - button "Cleaning" [ref=f4e15] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e16]: 🧽
+          - text: Cleaning
+        - button "Plumbing" [ref=f4e17] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e18]: 🪠
+          - text: Plumbing
+        - button "Electrical" [ref=f4e19] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e20]: 💡
+          - text: Electrical
+        - button "Garden" [ref=f4e21] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e22]: 🪴
+          - text: Garden
+        - button "Painting" [ref=f4e23] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e24]: 🎨
+          - text: Painting
+        - button "Handyman" [ref=f4e25] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e26]: 🧰
+          - text: Handyman
+        - button "All jobs" [ref=f4e27] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e28]: 🔎
+          - text: All jobs
+    - main [ref=f4e29]:
+      - region [ref=f4e30]:
+        - heading [level=2] [ref=f4e31]:
+          - button [ref=f4e32] [cursor=pointer]:
+            - text: Top rated window cleaners near
+            - generic [ref=f4e33]: you
+      - region [ref=f4e49]:
+        - generic [ref=f4e50]:
+          - heading "Around you" [level=2] [ref=f4e51]
+          - link "Open map" [ref=f4e52] [cursor=pointer]:
+            - /url: https://www.google.com/maps/search/?api=1&query=Window%20cleaner
+        - generic [ref=f4e53]:
+          - img "Map of window cleaners around Set your area" [ref=f4e54]
+          - button "Window cleaners near you Based on your last search" [ref=f4e67] [cursor=pointer]:
+            - generic [ref=f4e68]:
+              - generic [ref=f4e69]: Window cleaners near you
+              - generic [ref=f4e70]: Based on your last search
+      - button "Do this kind of work? Add your business free and get quote requests from people near you. Add your business" [ref=f4e73] [cursor=pointer]:
+        - generic [ref=f4e74]:
+          - generic [ref=f4e75]: Do this kind of work?
+          - generic [ref=f4e76]: Add your business free and get quote requests from people near you.
+          - generic [ref=f4e77]: Add your business
+    - navigation "Main" [ref=f4e85]:
+      - button [ref=f4e86] [cursor=pointer]
+      - button [ref=f4e91] [cursor=pointer]
+      - button [ref=f4e95] [cursor=pointer]
+      - button [ref=f4e101] [cursor=pointer]
+  - status

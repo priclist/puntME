@@ -1,0 +1,54 @@
+- generic [ref=f5e2]:
+  - generic [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - button "Back" [ref=f5e6] [cursor=pointer]
+      - button "Edit" [ref=f5e13] [cursor=pointer]
+    - main [ref=f5e9]:
+      - generic [ref=f5e14]:
+        - generic [aria-hidden] [ref=f5e15]: SW
+        - generic [ref=f5e16]:
+          - heading "Shiny Windows Test" [level=1] [ref=f5e17]
+          - paragraph [ref=f5e18]:
+            - text: Window cleaner
+            - generic [aria-hidden] [ref=f5e19]: ·
+            - text: Sea Point
+        - generic [ref=f5e20]: Live on PuntMe
+      - generic [ref=f5e21]:
+        - generic [ref=f5e22]:
+          - strong [ref=f5e23]: "0"
+          - generic [ref=f5e24]: Page views
+        - generic [ref=f5e25]:
+          - strong [ref=f5e26]: "0"
+          - generic [ref=f5e27]: Quote requests
+        - generic [ref=f5e28]:
+          - strong [ref=f5e29]: 15 km
+          - generic [ref=f5e30]: You travel
+      - generic [ref=f5e31]:
+        - button "View page" [ref=f5e32] [cursor=pointer]
+        - button "Share" [ref=f5e36] [cursor=pointer]
+        - button "Pause" [ref=f5e40] [cursor=pointer]
+      - button "Get every request on your phone Turn on notifications so you never miss a job" [ref=f5e43] [cursor=pointer]:
+        - generic [ref=f5e47]:
+          - generic [ref=f5e48]: Get every request on your phone
+          - generic [ref=f5e49]: Turn on notifications so you never miss a job
+      - region [ref=f5e52]:
+        - generic [ref=f5e53]:
+          - heading "Photos & videos" [level=2] [ref=f5e54]
+          - generic [ref=f5e55]: 3 of 20
+        - generic [ref=f5e56]:
+          - generic [ref=f5e57]:
+            - generic [ref=f5e58]: Cover
+            - button "Delete photo" [ref=f5e59] [cursor=pointer]
+          - generic [ref=f5e62]:
+            - generic [ref=f5e64]: Video
+            - button "Delete video" [ref=f5e67] [cursor=pointer]
+          - button "Delete photo" [ref=f5e71] [cursor=pointer]
+          - button "Add" [active] [ref=f5e74] [cursor=pointer]
+      - region [ref=f5e78]:
+        - heading "Quote requests" [level=2] [ref=f5e79]
+        - generic [ref=f5e80]:
+          - paragraph [ref=f5e84]: No requests yet
+          - paragraph [ref=f5e85]: When someone asks for a quote it shows up here. Share your page to get your first one.
+          - button "Share your page" [ref=f5e86] [cursor=pointer]
+      - button "Remove from PuntMe" [ref=f5e88] [cursor=pointer]
+  - status

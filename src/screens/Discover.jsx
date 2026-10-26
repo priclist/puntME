@@ -280,7 +280,11 @@ export default function Discover({
 
         <InstallBanner onShowInstall={onShowInstall} />
       </main>
+<<<<<<< Updated upstream
       <TabBar active="discover" onNavigate={onNavigate} savedCount={savedCount} newQuotes={account.unread} />
+=======
+      <TabBar active="discover" onNavigate={onNavigate} savedCount={savedCount} unread={account.unread} />
+>>>>>>> Stashed changes
     </div>
   )
 }
