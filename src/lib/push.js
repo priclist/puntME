@@ -7,7 +7,7 @@ import { isIOS, isStandalone } from './pwa.js'
 // What this phone wants is kept here and copied to the server, which sends.
 
 const SETTINGS_KEY = 'puntme:push'
-const DEFAULTS = { prefs: { quotes: true, alerts: true }, alerts: [] }
+const DEFAULTS = { prefs: { quotes: true, alerts: true, messages: true }, alerts: [] }
 
 export const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 

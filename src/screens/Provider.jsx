@@ -37,7 +37,16 @@ async function share(p) {
 const mapQuery = (p) =>
   p.puntme ? (p.googlePlaceId ? `place_id:${p.googlePlaceId}` : `${p.location.lat},${p.location.lng}`) : `place_id:${p.id}`
 
-export default function Provider({ provider: p, onBack, saved, onToggleSave, isOwner = false }) {
+export default function Provider({
+  provider: p,
+  onBack,
+  saved,
+  onToggleSave,
+  isOwner = false,
+  signedIn = false,
+  onMessage,
+  onOpenChat,
+}) {
   const [quoteOpen, setQuoteOpen] = useState(false)
   const tel = telHref(p.phone)
   const quoteText = `Hi ${p.name}, I found you on PuntMe. Could I please get a quote${p.category ? ` for ${p.category.toLowerCase()} work` : ''}?`
@@ -109,6 +118,17 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave, isO
             <Icon name="phone" size={22} strokeWidth={1.9} />
             Call
           </ActionLink>
+          {p.puntme ? (
+            // Businesses on PuntMe chat in the app; the website is in the details below.
+            <button
+              type="button"
+              className="pm-action"
+              onClick={() => (isOwner ? showToast('This is your business. Customers’ messages arrive in Messages.') : onMessage(p))}
+            >
+              <Icon name="message" size={22} />
+              Message
+            </button>
+          ) : null}
           <ActionLink className="pm-action" href={whatsapp} external demo={p.demo}>
             <Icon name="chat" size={22} />
             WhatsApp
@@ -117,10 +137,12 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave, isO
             <Icon name="route" size={22} />
             Route
           </ActionLink>
-          <ActionLink className="pm-action" href={p.website} external demo={p.demo}>
-            <Icon name="globe" size={22} />
-            Website
-          </ActionLink>
+          {!p.puntme && (
+            <ActionLink className="pm-action" href={p.website} external demo={p.demo}>
+              <Icon name="globe" size={22} />
+              Website
+            </ActionLink>
+          )}
         </div>
 
         {/* Map */}
@@ -282,7 +304,18 @@ export default function Provider({ provider: p, onBack, saved, onToggleSave, isO
           </ActionLink>
         )}
       </div>
-      {p.puntme && <QuoteSheet open={quoteOpen} provider={p} onClose={() => setQuoteOpen(false)} />}
+      {p.puntme && (
+        <QuoteSheet
+          open={quoteOpen}
+          provider={p}
+          signedIn={signedIn && !isOwner}
+          onOpenChat={(convId) => {
+            setQuoteOpen(false)
+            onOpenChat(convId)
+          }}
+          onClose={() => setQuoteOpen(false)}
+        />
+      )}
     </div>
   )
 }

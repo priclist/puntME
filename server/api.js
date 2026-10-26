@@ -5,6 +5,7 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import express from 'express'
 import { CATEGORIES } from '../src/data/categories.js'
+import { chatRoutes } from './chat.js'
 import { newId, now, openDb, parseJson } from './db.js'
 import { alertMatches, distanceTo, matchesQuery, servesArea } from './match.js'
 import { sendPush, setupPush } from './push.js'
@@ -262,6 +263,7 @@ export function createApi({ dataDir }) {
       status: b.status,
       views: b.views,
       quoteCount: counts.total,
+      chatCount: chat.chatCountFor.get(b.id).n,
       unread: counts.unread ?? 0,
       updatedAt: b.updated_at,
     }
@@ -275,7 +277,7 @@ export function createApi({ dataDir }) {
     res.set('Cache-Control', 'no-store') // personal and live data
     next()
   })
-  api.use(express.json({ limit: '600kb' }))
+  api.use(express.json({ limit: '4mb' })) // room for one chat photo
 
   // Who is asking (optional on public routes).
   api.use((req, _res, next) => {
@@ -305,7 +307,12 @@ export function createApi({ dataDir }) {
 
   function me(user) {
     const businesses = q.ownBusinesses.all(user.id).map(ownedBusiness)
-    return { user, businesses, unread: businesses.reduce((n, b) => n + b.unread, 0) }
+    return {
+      user,
+      businesses,
+      unread: businesses.reduce((n, b) => n + b.unread, 0),
+      messagesUnread: chat.unreadFor(user.id),
+    }
   }
 
   api.get('/health', (_req, res) => res.json({ ok: true }))
@@ -496,7 +503,7 @@ export function createApi({ dataDir }) {
 
   function prefsInput(value) {
     const p = value && typeof value === 'object' ? value : {}
-    return { quotes: p.quotes !== false, alerts: p.alerts !== false }
+    return { quotes: p.quotes !== false, alerts: p.alerts !== false, messages: p.messages !== false }
   }
 
   function alertsInput(value) {
@@ -541,6 +548,10 @@ export function createApi({ dataDir }) {
     if (!sent) fail(502, 'The notification couldn’t be delivered. Turn notifications off and on again.')
     res.json({ ok: true })
   })
+
+  /* Messages (server/chat.js) */
+
+  const chat = chatRoutes({ api, db, notify, signedIn, fail, longText, limiter, dataDir })
 
   /* Errors */
 

@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react'
 import { GoogleBadge, Icon, PuntMeBadge, Star } from './icons.jsx'
 import { showToast } from './Toast.jsx'
 import { API_KEY } from '../lib/places.js'
@@ -174,12 +175,17 @@ export function SkeletonCard() {
   )
 }
 
+// Unread messages for the tab bar badge, provided once by App.
+export const UnreadContext = createContext(0)
+
 export function TabBar({ active, onNavigate, savedCount = 0 }) {
+  const unread = useContext(UnreadContext)
   const tabs = [
     { id: 'discover', label: 'Discover', icon: 'compass' },
     { id: 'saved', label: 'Saved', icon: 'bookmark' },
-    { id: 'settings', label: 'Settings', icon: 'sliders' },
+    { id: 'messages', label: 'Messages', icon: 'message' },
   ]
+  const badge = { saved: savedCount, messages: unread }
   return (
     <nav className="pm-tabbar" aria-label="Main">
       {tabs.map((t) => (
@@ -188,11 +194,14 @@ export function TabBar({ active, onNavigate, savedCount = 0 }) {
           type="button"
           className={`pm-tab ${active === t.id ? 'is-active' : ''}`}
           aria-current={active === t.id ? 'page' : undefined}
+          aria-label={t.id === 'messages' && unread ? `Messages, ${unread} unread` : undefined}
           onClick={() => onNavigate(t.id)}
         >
           <span className="pm-tab__icon">
             <Icon name={t.icon} size={24} strokeWidth={active === t.id ? 2 : 1.8} filled={t.id === 'saved' && active === t.id} />
-            {t.id === 'saved' && savedCount > 0 && <span className="pm-badge">{savedCount}</span>}
+            {badge[t.id] > 0 && (
+              <span className={`pm-badge ${t.id === 'messages' ? 'pm-badge--alert' : ''}`}>{badge[t.id] > 99 ? '99+' : badge[t.id]}</span>
+            )}
           </span>
           {t.label}
         </button>

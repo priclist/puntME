@@ -2,7 +2,7 @@
 
 **Find someone for any job.** Search a job, like *window cleaner*, *plumber* or *dog groomer*, and PuntMe lists the local people and businesses who do it: businesses that joined PuntMe themselves, plus listings from **Google Business Profiles** with ratings, reviews, opening hours, phone numbers, websites and directions.
 
-**Got a business?** Tap the profile button in the top right, create an account and add your business in about two minutes. Customers nearby find you, and their quote requests reach your phone as **push notifications**.
+**Got a business?** Tap the profile button in the top right, create an account and add your business in about two minutes. Customers nearby find you, **message you in the app**, and their quote requests and messages reach your phone as **push notifications**.
 
 PuntMe is an installable web app (PWA) built with **React + Vite**, with a small **Node.js** server for accounts, businesses and notifications. It has a clean, light design with white cards, DM Sans and Space Grotesk type, and a blue accent.
 
@@ -17,18 +17,34 @@ PuntMe is an installable web app (PWA) built with **React + Vite**, with a small
 - 🏢 **Businesses on PuntMe first.** Businesses that joined PuntMe show first, with a green tick, followed by Google Business listings.
 - 🎛️ **Filters and sorting.** *Open now*, *4.5+ stars* and *Within 5 km*. Sort by best match, top rated or nearest.
 - 📄 **Business page.** Call, WhatsApp, route and website buttons, a live map, opening hours and reviews.
-- 📨 **Ask for a quote.** For businesses on PuntMe, the request goes straight to the owner's phone. For Google listings it opens WhatsApp with a message ready to send.
+- 💬 **Messages.** Chat with any business on PuntMe from its page. It works like iMessage: read receipts, photos, and press and hold to copy, edit or unsend.
+- 📨 **Ask for a quote.** For businesses on PuntMe, the request goes straight to the owner's phone, as a chat if you're signed in. For Google listings it opens WhatsApp with a message ready to send.
 - 🔔 **Job alerts.** Tap *Notify me* under the results and PuntMe tells you when a new plumber (or anyone else) joins near you.
 - 🔖 **Saved list.** Keep the people you like.
 - 📍 **Your area.** Search any real South African suburb or town, or use your phone's GPS.
 
 ### For business owners
 
-- 👤 **Profile, top right.** Create an account, or sign in, from any tab.
+- 👤 **Profile, top right.** Create an account or sign in from any tab. Your businesses, notifications, area, Google key and account settings are all here.
 - 🏪 **Add your business.** Four short steps: your business, contact details, where and when you work, and a preview. Already on Google? Find your Google Business Profile and PuntMe fills the form in for you. The draft is kept on the phone until you publish.
-- 📥 **Quote requests.** Every request lands in *My business* with the customer's name, number and message, plus one-tap Call and WhatsApp replies.
+- 💬 **Customer chats.** Customers' messages arrive in the Messages tab, marked with the business they're for. Reply with text or photos.
+- 📥 **Quote requests.** Requests from people who aren't signed in land in *My business* with the customer's name, number and message, plus one-tap Call and WhatsApp replies.
 - 📊 **Stats.** Page views and quote requests for each business.
 - ⏸️ **Pause, edit or remove** your listing at any time. You can have up to 5 businesses per account.
+
+### Messages
+
+The tabs are **Discover · Saved · Messages**. Messages works like the ClassroomX chats:
+
+- An inbox with a large title, unread dots, and *Edit* to delete chats (a chat comes back if a new message arrives).
+- In a chat:
+  - Bubbles with tails, and time dividers.
+  - *Sent* and *Read* under your latest message.
+  - Photos, which are resized on the phone before sending.
+  - Press and hold a message to copy it, edit it (for a minute) or unsend it.
+  - The composer rides above the keyboard.
+- The ⋯ menu: view the business, call it, mute the chat's notifications, or delete the chat.
+- A push notification for every message, grouped per chat. Opening the chat clears it. The thread updates every few seconds while it's open, and at once when a push arrives.
 
 ### App
 
@@ -68,6 +84,7 @@ What sends a notification:
 
 | When | Who gets it |
 | --- | --- |
+| A new chat message | The other person in the chat, unless they muted it or turned Messages off |
 | A customer sends a quote request | The business owner, on every phone where they're signed in with notifications on |
 | A new business goes live | Everyone following that job within 25 km (or the business's travel distance) |
 | *Send a test notification* | That phone |
@@ -83,7 +100,7 @@ What sends a notification:
 4. **Restrict the key.** This step is important because the key is visible in the browser.
    - *Application restrictions* → **Websites**. Add `http://localhost:5173/*` and your real domain.
    - *API restrictions* → allow only the three APIs above.
-5. **Quickest way to try it:** open PuntMe → **Settings** → paste the key under *Google Maps API key* → **Connect**. The key is kept on that phone only.
+5. **Quickest way to try it:** open PuntMe → profile (top right) → *Business listings* → paste the key → **Connect**. The key is kept on that phone only.
 
    **For a deployed app**, put it in `.env` instead so every visitor gets real listings:
 
@@ -95,7 +112,7 @@ What sends a notification:
    VITE_GOOGLE_MAPS_API_KEY=your-key-here
    ```
 
-6. Restart `npm run dev` (or rebuild). **Settings** should now show **Source: Google Business**.
+6. Restart `npm run dev` (or rebuild). *Business listings* in the profile should now say **Google listings: Live**.
 
 With a key, business owners also get **Already on Google?** in the *Add your business* form, which fills the form from their Google Business Profile.
 
@@ -124,7 +141,7 @@ npm start            # serves dist/ and /api on PORT (default 8787)
 
 Run it under a process manager, for example `pm2 start npm --name puntme -- start`, and put it behind Apache or nginx with **HTTPS**. HTTPS is required for installing and for notifications. Forward everything to `http://127.0.0.1:8787`.
 
-- **Back up the data folder** (`PUNTME_DATA_DIR`, default `server/data`). It holds the database and the push keys.
+- **Back up the data folder** (`PUNTME_DATA_DIR`, default `server/data`). It holds the database, chat photos and the push keys.
 - Behind a proxy, client IPs (used for rate limits) come from `X-Forwarded-For`. `TRUST_PROXY` defaults to trusting the local machine.
 - Built files are cached for a year (their names change on every build). `sw.js`, the manifest and pages are never cached, so updates reach people straight away.
 - To host the app separately (e.g. on a static host), build with `VITE_API_URL=https://your-api` and start the server with `CORS_ORIGIN=https://your-app`.
@@ -159,6 +176,7 @@ puntME/
 ├── server/
 │   ├── index.js               # Production server: dist/ + /api, caching headers
 │   ├── api.js                 # Accounts, businesses, quote requests, push routes
+│   ├── chat.js                # Messages: chats, photos, read receipts, push
 │   ├── db.js                  # SQLite schema (node:sqlite)
 │   ├── match.js               # Which businesses answer a search or job alert
 │   └── push.js                # Web Push keys and sending
@@ -174,8 +192,9 @@ puntME/
     │   ├── Results.jsx        # Results, filters, sorting, "Notify me"
     │   ├── Provider.jsx       # Business page
     │   ├── Saved.jsx          # Saved tab
-    │   ├── Settings.jsx       # Area, Google key, business, app
-    │   ├── Profile.jsx        # Sign in / account, your businesses, notifications
+    │   ├── Messages.jsx       # Messages tab: the chat list
+    │   ├── Chat.jsx           # One chat
+    │   ├── Profile.jsx        # Account, your businesses, notifications, settings
     │   ├── BusinessForm.jsx   # Add (4 steps) or edit a business
     │   └── MyBusiness.jsx     # Owner view: stats, quote requests, pause, share
     ├── ui/
@@ -184,6 +203,7 @@ puntME/
     │   ├── LocationSheet.jsx  # Area picker
     │   ├── QuoteSheet.jsx     # Ask a PuntMe business for a quote
     │   ├── InstallSheet.jsx   # Add to Home Screen steps for iPhone
+    │   ├── AppSettings.jsx    # Area, Google key, data (shown in the profile)
     │   ├── NotificationSettings.jsx
     │   ├── Toast.jsx
     │   └── icons.jsx
@@ -193,6 +213,7 @@ puntME/
         ├── account.js         # Signed-in person and their businesses
         ├── businesses.js      # PuntMe businesses as listings, hours, phone format
         ├── places.js          # Google Places search + merging PuntMe businesses
+        ├── chat.js            # Messages API, times, photo resizing
         ├── push.js            # Notification permission, subscription, job alerts
         ├── pwa.js             # Install prompt
         ├── image.js           # Logo resizing

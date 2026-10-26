@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { initials } from '../lib/format.js'
 import { usePush } from '../lib/push.js'
 import { useInstall } from '../lib/pwa.js'
+import { DataSettings, ListingSettings, LocationSettings } from '../ui/AppSettings.jsx'
 import { Icon } from '../ui/icons.jsx'
 import NotificationSettings from '../ui/NotificationSettings.jsx'
 import { Avatar } from '../ui/pieces.jsx'
@@ -217,7 +218,7 @@ function AccountSection({ account }) {
   )
 }
 
-export default function Profile({ account, onBack, onAddBusiness, onOpenBusiness, onAuthed, suggestion, onShowInstall }) {
+export default function Profile({ account, onBack, onAddBusiness, onOpenBusiness, onAuthed, suggestion, onShowInstall, settings }) {
   const push = usePush()
   const install = useInstall()
   const user = account.user
@@ -251,7 +252,7 @@ export default function Profile({ account, onBack, onAddBusiness, onOpenBusiness
         ) : (
           <header className="pm-stack-4">
             <h1 className="pm-hero pm-hero--page">Profile</h1>
-            <p className="pm-meta pm-m0">Add your business, follow jobs and get notifications</p>
+            <p className="pm-meta pm-m0">Your account, business, messages and settings</p>
           </header>
         )}
 
@@ -282,10 +283,10 @@ export default function Profile({ account, onBack, onAddBusiness, onOpenBusiness
                 <Icon name="store" size={26} />
               </span>
               <div className="pm-stack-4">
-                <h2 className="pm-h3">Put your business on PuntMe</h2>
+                <h2 className="pm-h3">Sign in to message and add your business</h2>
                 <p className="pm-meta pm-m0">
-                  People nearby search for your kind of work every day. Add your business free and get quote requests straight to
-                  your phone.
+                  Chat with businesses about prices and times. Got a business? Add it free and get quote requests and messages
+                  straight to your phone.
                 </p>
               </div>
             </div>
@@ -325,8 +326,17 @@ export default function Profile({ account, onBack, onAddBusiness, onOpenBusiness
         )}
 
         {account.status !== 'loading' && (
-          <NotificationSettings push={push} hasBusiness={businesses.length > 0} suggestion={suggestion} onShowInstall={onShowInstall} />
+          <NotificationSettings
+            push={push}
+            signedIn={Boolean(user)}
+            hasBusiness={businesses.length > 0}
+            suggestion={suggestion}
+            onShowInstall={onShowInstall}
+          />
         )}
+
+        <LocationSettings {...settings} />
+        <ListingSettings />
 
         {install.available && (
           <section className="pm-stack-12" aria-labelledby="app-heading">
@@ -346,7 +356,9 @@ export default function Profile({ account, onBack, onAddBusiness, onOpenBusiness
 
         {account.status === 'ready' && <AccountSection account={account} />}
 
-        <p className="pm-footnote">Your account is only used for your PuntMe business and notifications.</p>
+        <DataSettings savedCount={settings.savedCount} onClearSaved={settings.onClearSaved} onClearRecent={settings.onClearRecent} />
+
+        <p className="pm-footnote">PuntMe 1.2 · Find someone for any job</p>
       </main>
     </div>
   )

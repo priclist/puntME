@@ -57,7 +57,7 @@ function QuoteCard({ quote: q, business, isNew, onDelete }) {
   )
 }
 
-export default function MyBusiness({ bizId, account, justPublished, onBack, onEdit, onView, onShowProfile }) {
+export default function MyBusiness({ bizId, account, justPublished, onBack, onEdit, onView, onShowProfile, onOpenMessages }) {
   const b = account.businesses.find((x) => x.id === bizId)
   const push = usePush()
   const [quotes, setQuotes] = useState({ status: 'loading', items: [], fresh: new Set() })
@@ -202,8 +202,8 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
             <span>Page views</span>
           </div>
           <div>
-            <strong>{b.quoteCount}</strong>
-            <span>Quote requests</span>
+            <strong>{b.quoteCount + b.chatCount}</strong>
+            <span>Requests and chats</span>
           </div>
           <div>
             <strong>{b.radiusKm} km</strong>
@@ -244,6 +244,20 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
           </button>
         )}
 
+        <button type="button" className="pm-areanudge pm-areanudge--plain" onClick={onOpenMessages}>
+          <Icon name="message" size={20} className="pm-accent" />
+          <span className="pm-stack-2 pm-grow">
+            <span className="pm-title-15">Messages from customers</span>
+            <span className="pm-meta">
+              {b.chatCount === 0
+                ? 'Signed-in customers chat with you here'
+                : `${b.chatCount} chat${b.chatCount === 1 ? '' : 's'}${account.messagesUnread ? ` · ${account.messagesUnread} unread` : ''}`}
+            </span>
+          </span>
+          {account.messagesUnread > 0 && <span className="pm-count">{account.messagesUnread}</span>}
+          <Icon name="chevronRight" size={18} strokeWidth={2} className="pm-muted" />
+        </button>
+
         <section className="pm-stack-12" aria-labelledby="quotes-heading">
           <h2 id="quotes-heading" className="pm-h2">Quote requests</h2>
           {quotes.status === 'loading' && (
@@ -257,7 +271,7 @@ export default function MyBusiness({ bizId, account, justPublished, onBack, onEd
             <div className="pm-empty">
               <Icon name="inbox" size={28} className="pm-muted" />
               <p className="pm-title-15">No requests yet</p>
-              <p className="pm-meta">When someone asks for a quote it shows up here. Share your page to get your first one.</p>
+              <p className="pm-meta">Customers who aren’t signed in send their name and number here. Share your page to get your first one.</p>
               <button type="button" className="pm-btn pm-btn--soft pm-empty__btn" onClick={() => sharePage(b)}>
                 Share your page
               </button>

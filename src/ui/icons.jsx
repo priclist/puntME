@@ -135,6 +135,21 @@ const PATHS = {
       <path d="M12 8.5v7M8.5 12h7" />
     </>
   ),
+  bellOff: (
+    <>
+      <path d="M8.5 5.4A6 6 0 0 1 18 11v4M6 11v5.5l-1.5 1.5h13.5M10 20.5a2.2 2.2 0 0 0 4 0" />
+      <path d="M4 4l16 16" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="8.5" y="8.5" width="11" height="11" rx="2.5" />
+      <path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5" />
+    </>
+  ),
+  undo: <path d="M9 14L4.5 9.5 9 5M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" />,
+  arrowUp: <path d="M12 19V5M6 11l6-6 6 6" />,
+  message: <path d="M5.5 4.5h13a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5 3.5v-3.5h-.5A2.5 2.5 0 0 1 3 15V7a2.5 2.5 0 0 1 2.5-2.5z" />,
 }
 
 export function Icon({ name, size = 20, filled = false, strokeWidth = 1.8, className = '' }) {

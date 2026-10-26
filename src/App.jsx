@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { matchCategory } from './data/categories.js'
 import { useAccount } from './lib/account.js'
+import { PUSH_EVENT } from './lib/chat.js'
 import { PM_PREFIX, newOnPuntMe } from './lib/businesses.js'
 import { locateMe } from './lib/geo.js'
 import { getProvider, searchProviders, usingGoogle } from './lib/places.js'
@@ -8,16 +9,18 @@ import { resyncPush } from './lib/push.js'
 import { useLocalStorage } from './lib/useLocalStorage.js'
 import { SAVED_KEY, loadLegacySaved, toSavedRef, useDropLegacySaved } from './lib/saved.js'
 import BusinessForm from './screens/BusinessForm.jsx'
+import Chat from './screens/Chat.jsx'
 import Discover from './screens/Discover.jsx'
+import Messages from './screens/Messages.jsx'
 import MyBusiness from './screens/MyBusiness.jsx'
 import Profile from './screens/Profile.jsx'
 import Results from './screens/Results.jsx'
 import Provider from './screens/Provider.jsx'
 import Saved from './screens/Saved.jsx'
-import Settings from './screens/Settings.jsx'
 import { Icon } from './ui/icons.jsx'
 import InstallSheet from './ui/InstallSheet.jsx'
 import LocationSheet from './ui/LocationSheet.jsx'
+import { UnreadContext } from './ui/pieces.jsx'
 import Toast, { showToast } from './ui/Toast.jsx'
 
 const IDLE = { status: 'idle', results: [], source: null, error: null }
@@ -167,12 +170,23 @@ export default function App() {
     push(accountRef.current.user ? { name: 'business-form' } : { name: 'profile', next: 'add' })
   }
 
+  // Chat with a business from its page. Signed out: sign in first, then the chat.
+  function messageBusiness(p) {
+    const business = { bizId: p.bizId, name: p.name, logo: p.logo }
+    push(accountRef.current.user ? { name: 'chat', business } : { name: 'profile', next: { name: 'chat', business } })
+  }
+
   // Links from notifications, home screen shortcuts and shared pages.
   function openLink(url) {
     const params = new URL(url, window.location.origin).searchParams
-    if (params.get('b')) push({ name: 'provider', linkId: params.get('b') })
+    if (params.get('chat')) {
+      // Already in that chat (tapped its notification): stay.
+      const top = stackRef.current.at(-1)
+      if (!(top.name === 'chat' && top.convId === params.get('chat'))) push({ name: 'chat', convId: params.get('chat') })
+    } else if (params.get('b')) push({ name: 'provider', linkId: params.get('b') })
     else if (params.get('quotes')) push({ name: 'business', bizId: params.get('quotes') })
-    else if (params.has('profile')) openProfile()
+    else if (params.has('profile') || params.get('go') === 'settings') openProfile()
+    else if (params.get('go') === 'messages') navigate('messages')
     else if (params.get('go') === 'saved') navigate('saved')
     else if (params.get('go') === 'search') startSearch()
     else if (params.get('go') === 'add') addBusiness()
@@ -219,7 +233,12 @@ export default function App() {
       if (type === 'navigate') openLinkRef.current(url)
       if (type === 'push') {
         accountRef.current.refresh()
-        // The app is open, so say it here too, with a way to jump there.
+        window.dispatchEvent(new CustomEvent(PUSH_EVENT, { detail: payload }))
+        // The app is open, so say it here too, with a way to jump there,
+        // unless it's about the chat already on screen.
+        const top = stackRef.current.at(-1)
+        const chatId = payload?.url && new URL(payload.url, window.location.origin).searchParams.get('chat')
+        if (chatId && top.name === 'chat' && top.convId === chatId) return
         if (payload?.title) showToast(payload.title, payload.url ? { action: { label: 'View', onClick: () => openLinkRef.current(payload.url) } } : {})
       }
     }
@@ -381,9 +400,19 @@ export default function App() {
   const areaLabel = place?.label ?? 'Set your area'
   const hasDistance = search.results.some((p) => p.distanceKm != null)
   const suggestion = lastJob ? { query: lastJob, place } : null
+  const settings = {
+    place,
+    onOpenSheet: openSheet,
+    locating,
+    locateError: sheetOpen ? null : locateError,
+    onLocate: locate,
+    savedCount: saved.length,
+    onClearSaved: clearSaved,
+    onClearRecent: recent.length ? () => setRecent([]) : null,
+  }
 
   return (
-    <>
+    <UnreadContext.Provider value={account.messagesUnread}>
       <div key={`${stack.length}:${screen.name}`} className={`pm-stage pm-stage--${navDir}`}>
         {renderScreen()}
       </div>
@@ -398,7 +427,7 @@ export default function App() {
       />
       <InstallSheet open={installOpen} onClose={() => setInstallOpen(false)} />
       <Toast />
-    </>
+    </UnreadContext.Provider>
   )
 
   function renderScreen() {
@@ -447,6 +476,9 @@ export default function App() {
               savedIds={savedIds}
               onToggleSave={toggleSave}
               isOwner={ownIds.has(`${PM_PREFIX}${screen.linkId}`)}
+              signedIn={Boolean(account.user)}
+              onMessage={messageBusiness}
+              onOpenChat={(convId) => push({ name: 'chat', convId })}
             />
           )
         }
@@ -457,6 +489,9 @@ export default function App() {
             saved={savedIds.has(screen.provider.id)}
             onToggleSave={toggleSave}
             isOwner={ownIds.has(screen.provider.id)}
+            signedIn={Boolean(account.user)}
+            onMessage={messageBusiness}
+            onOpenChat={(convId) => push({ name: 'chat', convId })}
           />
         )
       case 'profile':
@@ -466,9 +501,13 @@ export default function App() {
             onBack={goBack}
             onAddBusiness={() => push({ name: 'business-form' })}
             onOpenBusiness={(bizId) => push({ name: 'business', bizId })}
-            onAuthed={() => screen.next === 'add' && replaceTop({ name: 'business-form' })}
+            onAuthed={() => {
+              if (screen.next === 'add') replaceTop({ name: 'business-form' })
+              else if (screen.next) replaceTop(screen.next)
+            }}
             suggestion={suggestion}
             onShowInstall={() => setInstallOpen(true)}
+            settings={settings}
           />
         )
       case 'business':
@@ -482,6 +521,7 @@ export default function App() {
             onEdit={(b) => push({ name: 'business-form', bizId: b.id })}
             onView={(listing) => push({ name: 'provider', provider: listing })}
             onShowProfile={openProfile}
+            onOpenMessages={() => navigate('messages')}
           />
         )
       case 'business-form': {
@@ -497,6 +537,7 @@ export default function App() {
               onAuthed={() => replaceTop({ name: 'business-form', bizId: screen.bizId })}
               suggestion={suggestion}
               onShowInstall={() => setInstallOpen(true)}
+              settings={settings}
             />
           )
         }
@@ -530,23 +571,40 @@ export default function App() {
             onOpenProfile={openProfile}
           />
         )
-      case 'settings':
+      case 'messages':
         return (
-          <Settings
-            place={place}
-            onOpenSheet={openSheet}
-            locating={locating}
-            locateError={sheetOpen ? null : locateError}
-            onLocate={locate}
-            usingGoogle={usingGoogle}
-            savedCount={saved.length}
-            onClearSaved={clearSaved}
-            onClearRecent={recent.length ? () => setRecent([]) : null}
-            onNavigate={navigate}
+          <Messages
             account={account}
+            onOpenChat={(c) => push({ name: 'chat', convId: c.id })}
+            onNavigate={navigate}
+            savedCount={saved.length}
             onOpenProfile={openProfile}
-            onAddBusiness={addBusiness}
-            onShowInstall={() => setInstallOpen(true)}
+          />
+        )
+      case 'chat':
+        if (!account.user) {
+          return (
+            <Profile
+              account={account}
+              onBack={goBack}
+              onAddBusiness={() => {}}
+              onOpenBusiness={() => {}}
+              onAuthed={() => replaceTop(screen)}
+              suggestion={suggestion}
+              onShowInstall={() => setInstallOpen(true)}
+              settings={settings}
+            />
+          )
+        }
+        return (
+          <Chat
+            key={screen.convId ?? screen.business?.bizId}
+            convId={screen.convId}
+            business={screen.business}
+            myId={account.user.id}
+            onBack={goBack}
+            onOpenBusiness={(bizId) => push({ name: 'provider', linkId: bizId })}
+            onRead={account.refresh}
           />
         )
       default:

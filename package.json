@@ -1,7 +1,7 @@
 {
   "name": "puntme",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "PuntMe — find someone for any job, and put your own business in front of the people nearby.",
   "type": "module",
   "scripts": {

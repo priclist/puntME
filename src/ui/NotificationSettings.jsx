@@ -9,7 +9,7 @@ const shortArea = (label) => label?.split(',')[0] ?? null
  * Push notification controls. `push` comes from usePush(); `suggestion`
  * ({ query, place }) offers a one-tap job alert for the last search.
  */
-export default function NotificationSettings({ push, hasBusiness, suggestion, onShowInstall }) {
+export default function NotificationSettings({ push, signedIn, hasBusiness, suggestion, onShowInstall }) {
   const { status, settings, busy } = push
 
   // Every action reports its own problem instead of failing quietly.
@@ -78,13 +78,23 @@ export default function NotificationSettings({ push, hasBusiness, suggestion, on
         <SwitchRow
           icon="bell"
           title="Push notifications"
-          note={on ? 'On for this phone' : hasBusiness ? 'Hear about quote requests the moment they arrive' : 'Hear when new people join near you'}
+          note={on ? 'On for this phone' : signedIn ? 'Hear about new messages the moment they arrive' : 'Hear when new people join near you'}
           checked={on}
           disabled={busy}
           onChange={(next) =>
             attempt(next ? push.enable : push.disable, next ? 'Notifications are on' : 'Notifications are off')()
           }
         />
+        {on && signedIn && (
+          <SwitchRow
+            icon="chat"
+            title="Messages"
+            note="When a business or a customer messages you"
+            checked={settings.prefs.messages}
+            disabled={busy}
+            onChange={setPref('messages')}
+          />
+        )}
         {on && hasBusiness && (
           <SwitchRow
             icon="inbox"
