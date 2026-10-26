@@ -69,6 +69,38 @@ const SCHEMA = `
     updated_at INTEGER NOT NULL
   );
   CREATE INDEX IF NOT EXISTS push_subs_user ON push_subs(user_id);
+
+  -- Chats between a customer and a business. Each side has its own read
+  -- point, mute and "deleted from my list" time.
+  CREATE TABLE IF NOT EXISTS conversations (
+    id                   TEXT PRIMARY KEY,
+    business_id          TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    customer_id          INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at           INTEGER NOT NULL,
+    last_message_at      INTEGER NOT NULL,
+    last_preview         TEXT NOT NULL DEFAULT '',
+    customer_read_at     INTEGER NOT NULL DEFAULT 0,
+    owner_read_at        INTEGER NOT NULL DEFAULT 0,
+    customer_muted       INTEGER NOT NULL DEFAULT 0,
+    owner_muted          INTEGER NOT NULL DEFAULT 0,
+    customer_archived_at INTEGER,
+    owner_archived_at    INTEGER,
+    UNIQUE (business_id, customer_id)
+  );
+  CREATE INDEX IF NOT EXISTS conversations_customer ON conversations(customer_id, last_message_at);
+  CREATE INDEX IF NOT EXISTS conversations_business ON conversations(business_id, last_message_at);
+
+  CREATE TABLE IF NOT EXISTS messages (
+    id              TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    sender_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    body            TEXT NOT NULL DEFAULT '',
+    photo           TEXT,
+    created_at      INTEGER NOT NULL,
+    edited_at       INTEGER,
+    deleted_at      INTEGER
+  );
+  CREATE INDEX IF NOT EXISTS messages_conversation ON messages(conversation_id, created_at);
 `
 
 export function openDb(dataDir) {

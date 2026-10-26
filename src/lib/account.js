@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SIGNED_OUT_EVENT, api, getToken, setToken } from './api.js'
 
-const SIGNED_OUT = { status: 'signedout', user: null, businesses: [], unread: 0 }
+const SIGNED_OUT = { status: 'signedout', user: null, businesses: [], unread: 0, messagesUnread: 0 }
 
 /**
  * The signed-in person, their businesses and unread quote requests.
@@ -11,7 +11,13 @@ export function useAccount() {
   const [account, setAccount] = useState(() => (getToken() ? { ...SIGNED_OUT, status: 'loading' } : SIGNED_OUT))
 
   const apply = useCallback((data) => {
-    setAccount({ status: 'ready', user: data.user, businesses: data.businesses, unread: data.unread })
+    setAccount({
+      status: 'ready',
+      user: data.user,
+      businesses: data.businesses,
+      unread: data.unread,
+      messagesUnread: data.messagesUnread ?? 0,
+    })
   }, [])
 
   const refresh = useCallback(async () => {

@@ -62,12 +62,12 @@
       ]
     },
     {
-      "name": "Saved people",
-      "short_name": "Saved",
-      "url": "/?go=saved",
+      "name": "Messages",
+      "short_name": "Messages",
+      "url": "/?go=messages",
       "icons": [
         {
-          "src": "/shortcut-saved.png",
+          "src": "/shortcut-messages.png",
           "sizes": "96x96",
           "type": "image/png"
         }
