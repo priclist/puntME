@@ -1,5 +1,6 @@
 import { BROWSE, QUICK_SEARCHES } from '../data/categories.js'
 import { usingGoogle } from '../lib/places.js'
+<<<<<<< Updated upstream
 import { useInstall } from '../lib/pwa.js'
 import { useLocalStorage } from '../lib/useLocalStorage.js'
 import { Icon } from '../ui/icons.jsx'
@@ -32,6 +33,10 @@ function InstallBanner({ onShowInstall }) {
     </div>
   )
 }
+=======
+import { Icon } from '../ui/icons.jsx'
+import { GoogleMapEmbed, MapIllustration, ProviderListCard, SkeletonCard, TabBar } from '../ui/pieces.jsx'
+>>>>>>> Stashed changes
 
 export default function Discover({
   areaLabel,
@@ -47,6 +52,7 @@ export default function Discover({
   onToggleSave,
   onNavigate,
   savedCount,
+<<<<<<< Updated upstream
   account,
   onOpenProfile,
   onAddBusiness,
@@ -54,6 +60,9 @@ export default function Discover({
   onShowInstall,
 }) {
   const ownsBusiness = account.businesses.length > 0
+=======
+}) {
+>>>>>>> Stashed changes
   // A typed area goes into the map search; a GPS position centres the map.
   const areaName = place && place.source !== 'gps' ? place.label : ''
   const center = place?.lat != null && !areaName ? { lat: place.lat, lng: place.lng } : null
@@ -72,7 +81,11 @@ export default function Discover({
               <span className="pm-area__label">{areaLabel}</span>
               <Icon name="chevronDown" size={16} strokeWidth={2} className="pm-muted" />
             </button>
+<<<<<<< Updated upstream
             <ProfileButton account={account} onOpen={onOpenProfile} />
+=======
+            <span className="pm-wordmark">PuntMe</span>
+>>>>>>> Stashed changes
           </div>
 
           <h1 className="pm-hero">
@@ -172,6 +185,7 @@ export default function Discover({
             </div>
           </section>
         )}
+<<<<<<< Updated upstream
 
         {newOnPm.length > 0 && (
           <section className="pm-stack-12" aria-labelledby="new-heading">
@@ -207,6 +221,8 @@ export default function Discover({
         )}
 
         <InstallBanner onShowInstall={onShowInstall} />
+=======
+>>>>>>> Stashed changes
       </main>
       <TabBar active="discover" onNavigate={onNavigate} savedCount={savedCount} />
     </div>

@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { connectApiKey, disconnectApiKey, keyFromSettings } from '../lib/places.js'
+<<<<<<< Updated upstream
 import { useInstall } from '../lib/pwa.js'
 import { Icon } from '../ui/icons.jsx'
 import { ProfileButton, TabBar } from '../ui/pieces.jsx'
 import { showToast } from '../ui/Toast.jsx'
+=======
+import { Icon } from '../ui/icons.jsx'
+import { TabBar } from '../ui/pieces.jsx'
+>>>>>>> Stashed changes
 
 function ConnectGoogle() {
   const [key, setKey] = useState('')
@@ -60,6 +65,7 @@ export default function Settings({
   onClearSaved,
   onClearRecent,
   onNavigate,
+<<<<<<< Updated upstream
   account,
   onOpenProfile,
   onAddBusiness,
@@ -73,6 +79,9 @@ export default function Settings({
     if (await install.install()) showToast('PuntMe is on your home screen')
   }
 
+=======
+}) {
+>>>>>>> Stashed changes
   const locationNote = locateError
     ? locateError
     : place
@@ -82,9 +91,14 @@ export default function Settings({
   return (
     <div className="pm-screen">
       <main className="pm-scroll pm-scroll--discover">
+<<<<<<< Updated upstream
         <header className="pm-pagehead">
           <h1 className="pm-hero pm-hero--page">Settings</h1>
           <ProfileButton account={account} onOpen={onOpenProfile} />
+=======
+        <header>
+          <h1 className="pm-hero pm-hero--page">Settings</h1>
+>>>>>>> Stashed changes
         </header>
 
         <section className="pm-stack-12" aria-labelledby="loc-heading">
@@ -140,6 +154,7 @@ export default function Settings({
         <section className="pm-stack-12" aria-labelledby="biz-heading">
           <h2 id="biz-heading" className="pm-h2">For businesses</h2>
           <div className="pm-card">
+<<<<<<< Updated upstream
             <button type="button" className="pm-detail pm-detail--button" onClick={business ? onOpenProfile : onAddBusiness}>
               <Icon name="store" size={20} className="pm-accent" />
               <span className="pm-stack-2 pm-grow">
@@ -157,12 +172,20 @@ export default function Settings({
               <span className="pm-stack-2 pm-grow">
                 <span className="pm-detail__main">Create a Google Business Profile</span>
                 <span className="pm-meta">Also free. Shows you in Google search and Maps too</span>
+=======
+            <a className="pm-detail pm-detail--button" href="https://business.google.com/create" target="_blank" rel="noreferrer">
+              <Icon name="globe" size={20} className="pm-muted" />
+              <span className="pm-stack-2 pm-grow">
+                <span className="pm-detail__main">Get your business on PuntMe</span>
+                <span className="pm-meta">Free Google Business Profile, shows up here once it’s live</span>
+>>>>>>> Stashed changes
               </span>
               <Icon name="external" size={16} strokeWidth={2} className="pm-muted" />
             </a>
           </div>
         </section>
 
+<<<<<<< Updated upstream
         <section className="pm-stack-12" aria-labelledby="app-heading">
           <h2 id="app-heading" className="pm-h2">App</h2>
           <div className="pm-card">
@@ -190,6 +213,8 @@ export default function Settings({
           </div>
         </section>
 
+=======
+>>>>>>> Stashed changes
         <section className="pm-stack-12" aria-labelledby="saved-heading">
           <h2 id="saved-heading" className="pm-h2">Your data</h2>
           <div className="pm-card">
@@ -200,12 +225,19 @@ export default function Settings({
               <span className="pm-detail__main pm-danger">Clear recent searches</span>
             </button>
           </div>
+<<<<<<< Updated upstream
           <p className="pm-meta pm-m0 pm-pad-x-4">
             Saved people, searches and your area stay on this phone only. Your account and business details are kept by PuntMe.
           </p>
         </section>
 
         <p className="pm-footnote">PuntMe 1.1 · Find someone for any job</p>
+=======
+          <p className="pm-meta pm-m0 pm-pad-x-4">Saved people, searches and your area stay on this phone only.</p>
+        </section>
+
+        <p className="pm-footnote">PuntMe 1.0 · Find someone for any job</p>
+>>>>>>> Stashed changes
       </main>
       <TabBar active="settings" onNavigate={onNavigate} savedCount={savedCount} />
     </div>

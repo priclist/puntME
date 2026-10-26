@@ -1,5 +1,8 @@
 import { demoSearch } from '../data/demo.js'
+<<<<<<< Updated upstream
 import { bizIdOf, getPuntMe, isPuntMeId, searchPuntMe } from './businesses.js'
+=======
+>>>>>>> Stashed changes
 import { haversineKm } from './format.js'
 
 // Google Business listings come from the Places API (New), loaded through the
@@ -148,13 +151,18 @@ async function toProvider(place, coords) {
 }
 
 /**
+<<<<<<< Updated upstream
  * Search for people/businesses who do a job: businesses on PuntMe first,
  * then Google listings (or demo ones without a key).
+=======
+ * Search for people/businesses who do a job.
+>>>>>>> Stashed changes
  * @param {{ query: string, place?: {label:string, lat?:number, lng?:number, source:'gps'|'search'} | null }} opts
  * @returns {Promise<{ source: 'google' | 'demo', results: object[] }>}
  */
 export async function searchProviders({ query, place }) {
   const coords = place?.lat != null ? { lat: place.lat, lng: place.lng } : null
+<<<<<<< Updated upstream
   const [listings, own] = await Promise.all([searchListings({ query, place, coords }), searchPuntMe(query, coords)])
   own.forEach((p) => sessionCache.set(p.id, p))
   return { source: listings.source, results: withOwnBusinesses(own, listings.results) }
@@ -173,6 +181,8 @@ function withOwnBusinesses(own, listings) {
 }
 
 async function searchListings({ query, place, coords }) {
+=======
+>>>>>>> Stashed changes
   const areaName = place && place.source !== 'gps' ? place.label : ''
 
   if (!usingGoogle) {
@@ -218,11 +228,14 @@ export function peekProvider(id) {
 export async function getProvider(id, coords) {
   const cached = sessionCache.get(id)
   if (cached) return cached
+<<<<<<< Updated upstream
   if (isPuntMeId(id)) {
     const listing = await getPuntMe(bizIdOf(id), coords)
     sessionCache.set(id, listing)
     return listing
   }
+=======
+>>>>>>> Stashed changes
   if (!usingGoogle) throw new Error('A Google API key is needed to load this business.')
 
   await loadMaps()
@@ -235,6 +248,7 @@ export async function getProvider(id, coords) {
   sessionCache.set(id, provider)
   return provider
 }
+<<<<<<< Updated upstream
 
 const pad = (n) => String(n).padStart(2, '0')
 const clock = (pt) => `${pad(pt.hour)}:${pad(pt.minute)}`
@@ -271,3 +285,5 @@ export async function findGoogleBusiness(text, coords) {
     })),
   }))
 }
+=======
+>>>>>>> Stashed changes

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { matchCategory } from './data/categories.js'
+<<<<<<< Updated upstream
 import { useAccount } from './lib/account.js'
 import { PM_PREFIX, newOnPuntMe } from './lib/businesses.js'
 import { locateMe } from './lib/geo.js'
@@ -11,12 +12,22 @@ import BusinessForm from './screens/BusinessForm.jsx'
 import Discover from './screens/Discover.jsx'
 import MyBusiness from './screens/MyBusiness.jsx'
 import Profile from './screens/Profile.jsx'
+=======
+import { reverseGeocode } from './lib/geo.js'
+import { searchProviders, usingGoogle } from './lib/places.js'
+import { useLocalStorage } from './lib/useLocalStorage.js'
+import { SAVED_KEY, loadLegacySaved, toSavedRef, useDropLegacySaved } from './lib/saved.js'
+import Discover from './screens/Discover.jsx'
+>>>>>>> Stashed changes
 import Results from './screens/Results.jsx'
 import Provider from './screens/Provider.jsx'
 import Saved from './screens/Saved.jsx'
 import Settings from './screens/Settings.jsx'
+<<<<<<< Updated upstream
 import { Icon } from './ui/icons.jsx'
 import InstallSheet from './ui/InstallSheet.jsx'
+=======
+>>>>>>> Stashed changes
 import LocationSheet from './ui/LocationSheet.jsx'
 import Toast, { showToast } from './ui/Toast.jsx'
 
@@ -50,6 +61,7 @@ function loadLegacyArea() {
 
 const placeKey = (p) => (p ? `${p.label}|${p.lat}|${p.lng}` : '')
 
+<<<<<<< Updated upstream
 /* A PuntMe business opened from a link or notification (?b=…). */
 function LinkedProvider({ id, coords, onBack, ...props }) {
   const [state, setState] = useState({ status: 'loading', provider: null })
@@ -91,6 +103,8 @@ function LinkedProvider({ id, coords, onBack, ...props }) {
   )
 }
 
+=======
+>>>>>>> Stashed changes
 export default function App() {
   // Screens form a stack that mirrors browser history, so the phone's back
   // button / back swipe goes back a screen. Tabs live at the bottom (depth 1).
@@ -101,10 +115,13 @@ export default function App() {
   const scrollMemo = useRef({})
   const screen = stack[stack.length - 1]
 
+<<<<<<< Updated upstream
   const account = useAccount()
   const accountRef = useRef(account)
   accountRef.current = account
 
+=======
+>>>>>>> Stashed changes
   const [text, setText] = useState('')
   const [lastQuery, setLastQuery] = useState('')
   const [search, setSearch] = useState(IDLE)
@@ -114,12 +131,18 @@ export default function App() {
   const [place, setPlace] = useLocalStorage('puntme:place', loadLegacyArea)
   const [recent, setRecent] = useLocalStorage('puntme:recent', [])
   const [sheetOpen, setSheetOpen] = useState(false)
+<<<<<<< Updated upstream
   const [installOpen, setInstallOpen] = useState(false)
+=======
+>>>>>>> Stashed changes
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState(null)
   const [lastJob, setLastJob] = useLocalStorage('puntme:lastJob', 'Window cleaner')
   const [recs, setRecs] = useState({ status: 'loading', items: [] })
+<<<<<<< Updated upstream
   const [newOnPm, setNewOnPm] = useState([])
+=======
+>>>>>>> Stashed changes
   const requestId = useRef(0)
   const lastJobRef = useRef(lastJob)
   lastJobRef.current = lastJob
@@ -130,6 +153,7 @@ export default function App() {
 
   useDropLegacySaved(setSaved)
   const savedIds = useMemo(() => new Set(saved.map((ref) => ref.id)), [saved])
+<<<<<<< Updated upstream
   const coords = useMemo(() => (place?.lat != null ? { lat: place.lat, lng: place.lng } : null), [place])
 
   /* ---------- Navigation ---------- */
@@ -195,6 +219,17 @@ export default function App() {
       const depth = Math.max(1, e.state?.depth ?? 1)
       setSheetOpen(false)
       setInstallOpen(false)
+=======
+  const coords = place?.lat != null ? { lat: place.lat, lng: place.lng } : null
+
+  /* ---------- Navigation ---------- */
+
+  useEffect(() => {
+    window.history.replaceState({ depth: 1 }, '')
+    const onPop = (e) => {
+      const depth = Math.max(1, e.state?.depth ?? 1)
+      setSheetOpen(false)
+>>>>>>> Stashed changes
       if (depth < stackRef.current.length) {
         setNavDir('pop')
         setStack((s) => s.slice(0, depth))
@@ -210,6 +245,7 @@ export default function App() {
     if (el) el.scrollTop = navDir === 'pop' ? (scrollMemo.current[stack.length] ?? 0) : 0
   }, [stack, navDir])
 
+<<<<<<< Updated upstream
   /* ---------- Service worker: notifications and updates ---------- */
 
   useEffect(() => {
@@ -241,6 +277,30 @@ export default function App() {
   useEffect(() => {
     if (accountSettled) resyncPush()
   }, [userId, accountSettled])
+=======
+  function push(next) {
+    const depth = stackRef.current.length
+    scrollMemo.current[depth] = document.querySelector('.pm-scroll')?.scrollTop ?? 0
+    setNavDir('push')
+    setStack((s) => [...s, next])
+    window.history.pushState({ depth: depth + 1 }, '')
+  }
+
+  function replaceTop(next) {
+    setStack((s) => [...s.slice(0, -1), next])
+  }
+
+  function goBack() {
+    if (stackRef.current.length > 1) window.history.back()
+    else navigate('discover')
+  }
+
+  function navigate(name) {
+    scrollMemo.current = {}
+    setNavDir('none')
+    setStack([{ name }])
+  }
+>>>>>>> Stashed changes
 
   /* ---------- Searching ---------- */
 
@@ -258,6 +318,7 @@ export default function App() {
     }
   }, [currentPlaceKey])
 
+<<<<<<< Updated upstream
   // "New on PuntMe": businesses that joined and work in this area.
   const businessCount = account.businesses.length
   useEffect(() => {
@@ -269,6 +330,8 @@ export default function App() {
     }
   }, [currentPlaceKey, businessCount])
 
+=======
+>>>>>>> Stashed changes
   async function runSearch(term) {
     const q = term.trim()
     if (!q) return
@@ -315,12 +378,38 @@ export default function App() {
   }
 
   function locate() {
+<<<<<<< Updated upstream
     setLocating(true)
     setLocateError(null)
     locateMe()
       .then(changePlace)
       .catch((err) => setLocateError(err.message))
       .finally(() => setLocating(false))
+=======
+    if (!navigator.geolocation) {
+      setLocateError('Location is not available on this device.')
+      return
+    }
+    setLocating(true)
+    setLocateError(null)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const at = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        const label = await reverseGeocode(at)
+        setLocating(false)
+        changePlace({ label: label ?? 'Your location', ...at, source: 'gps' })
+      },
+      (err) => {
+        setLocateError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location is turned off for PuntMe. Allow it in your browser settings, or type your area instead.'
+            : 'PuntMe couldn’t get your location. Try again, or type your area instead.',
+        )
+        setLocating(false)
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 10 * 60 * 1000 },
+    )
+>>>>>>> Stashed changes
   }
 
   function openSheet() {
@@ -370,17 +459,25 @@ export default function App() {
     } else if (sort === 'distance') {
       list = [...list].sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity))
     }
+<<<<<<< Updated upstream
     // Businesses on PuntMe take requests in the app, so they come first.
     if (sort !== 'distance') list = [...list.filter((p) => p.puntme), ...list.filter((p) => !p.puntme)]
+=======
+>>>>>>> Stashed changes
     return list
   }, [search.results, filters, sort])
 
   const openProvider = useCallback((p) => push({ name: 'provider', provider: p }), [])
 
+<<<<<<< Updated upstream
   const ownIds = useMemo(() => new Set(account.businesses.map((b) => `${PM_PREFIX}${b.id}`)), [account.businesses])
   const areaLabel = place?.label ?? 'Set your area'
   const hasDistance = search.results.some((p) => p.distanceKm != null)
   const suggestion = lastJob ? { query: lastJob, place } : null
+=======
+  const areaLabel = place?.label ?? 'Set your area'
+  const hasDistance = search.results.some((p) => p.distanceKm != null)
+>>>>>>> Stashed changes
 
   return (
     <>
@@ -396,7 +493,10 @@ export default function App() {
         onPick={changePlace}
         onClose={() => setSheetOpen(false)}
       />
+<<<<<<< Updated upstream
       <InstallSheet open={installOpen} onClose={() => setInstallOpen(false)} />
+=======
+>>>>>>> Stashed changes
       <Toast />
     </>
   )
@@ -433,6 +533,7 @@ export default function App() {
             onOpenProvider={openProvider}
             onToggleSave={toggleSave}
             onRetry={() => runSearch(lastQuery)}
+<<<<<<< Updated upstream
             place={place}
             onShowInstall={() => setInstallOpen(true)}
           />
@@ -450,12 +551,18 @@ export default function App() {
             />
           )
         }
+=======
+          />
+        )
+      case 'provider':
+>>>>>>> Stashed changes
         return (
           <Provider
             provider={screen.provider}
             onBack={goBack}
             saved={savedIds.has(screen.provider.id)}
             onToggleSave={toggleSave}
+<<<<<<< Updated upstream
             isOwner={ownIds.has(screen.provider.id)}
           />
         )
@@ -517,6 +624,10 @@ export default function App() {
           />
         )
       }
+=======
+          />
+        )
+>>>>>>> Stashed changes
       case 'saved':
         return (
           <Saved
@@ -526,8 +637,11 @@ export default function App() {
             onToggleSave={toggleSave}
             onRemove={removeSaved}
             onNavigate={navigate}
+<<<<<<< Updated upstream
             account={account}
             onOpenProfile={openProfile}
+=======
+>>>>>>> Stashed changes
           />
         )
       case 'settings':
@@ -543,10 +657,13 @@ export default function App() {
             onClearSaved={clearSaved}
             onClearRecent={recent.length ? () => setRecent([]) : null}
             onNavigate={navigate}
+<<<<<<< Updated upstream
             account={account}
             onOpenProfile={openProfile}
             onAddBusiness={addBusiness}
             onShowInstall={() => setInstallOpen(true)}
+=======
+>>>>>>> Stashed changes
           />
         )
       default:
@@ -565,11 +682,14 @@ export default function App() {
             onToggleSave={toggleSave}
             onNavigate={navigate}
             savedCount={saved.length}
+<<<<<<< Updated upstream
             account={account}
             onOpenProfile={openProfile}
             onAddBusiness={addBusiness}
             newOnPm={newOnPm}
             onShowInstall={() => setInstallOpen(true)}
+=======
+>>>>>>> Stashed changes
           />
         )
     }
